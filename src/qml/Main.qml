@@ -4,9 +4,8 @@ import Quartz
 
 import Backend
 
-ApplicationWindow {
+AppWindow {
 	id: root
-	visible: true
 	title: "Tag along"
 	width: 800
 	height: 600
