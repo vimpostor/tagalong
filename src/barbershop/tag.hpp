@@ -9,7 +9,7 @@ using TagId = int;
 
 class Tag {
 	Q_GADGET
-	Q_PROPERTY(QUrl sheetmusicUrl MEMBER sheetMusicAlt)
+	Q_PROPERTY(QUrl sheetmusicUrl MEMBER sheetMusicAlt CONSTANT)
 public:
 	explicit Tag(const QDomElement &node);
 

@@ -11,6 +11,11 @@ int main(int argc, char *argv[]) {
 	QCoreApplication::setApplicationName("tag-along");
 	QGuiApplication app(argc, argv);
 
+	Api::get()->init();
+	if (argc > 1) {
+		Backend::get()->document = argv[1];
+	}
+
 	QGuiApplication::setWindowIcon(QIcon::fromTheme("tagalong", QIcon(":/tagalong")));
 
 	QQmlApplicationEngine engine;
@@ -20,6 +25,5 @@ int main(int argc, char *argv[]) {
 		return EXIT_FAILURE;
 	}
 
-	Api::get()->init();
 	return app.exec();
 }

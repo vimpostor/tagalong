@@ -14,5 +14,15 @@ AppWindow {
 	Material.accent: Material.Pink
 	BarbershopPage {
 		anchors.fill: parent
+		visible: !loader.active
+	}
+	Loader {
+		id: loader
+		anchors.fill: parent
+		active: Backend.documentSource != ""
+		sourceComponent: PdfViewer {
+			anchors.fill: parent
+			source: "file://" + Backend.documentSource
+		}
 	}
 }
