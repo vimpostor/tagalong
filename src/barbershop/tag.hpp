@@ -1,0 +1,34 @@
+#pragma once
+
+#include <QDomElement>
+#include <QObject>
+#include <QUrl>
+#include <QtQml/qqmlregistration.h>
+
+using TagId = int;
+
+class Tag {
+	Q_GADGET
+	Q_PROPERTY(QUrl sheetmusicUrl MEMBER sheetMusicAlt)
+public:
+	explicit Tag(const QDomElement &node);
+
+	TagId id = 0;
+	QString title;
+	QString altTitle;
+	QString key;
+	int parts = 0;
+	QString notes;
+	QString arranger;
+	QString arranged;
+	QString sungBy;
+	QString sungYear;
+	QString quartet;
+	QString posted;
+	QString collection;
+	float rating = 0;
+	int ratingCount = 0;
+	int downloaded = 0;
+	QUrl sheetmusic;
+	QUrl sheetMusicAlt;
+};
