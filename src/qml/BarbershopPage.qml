@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls.Material
 
 import Quartz
 import Backend
@@ -13,6 +14,10 @@ Item {
 		anchors.margins: 16
 		placeholderText: "Search Tags"
 		onSearched: Api.requestTag(parseInt(text))
+	}
+	BusyIndicator {
+		anchors.centerIn: parent
+		running: Api.isSyncing
 	}
 
 	Image {

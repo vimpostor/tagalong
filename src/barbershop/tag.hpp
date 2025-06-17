@@ -1,6 +1,5 @@
 #pragma once
 
-#include <QDomElement>
 #include <QObject>
 #include <QUrl>
 #include <QtQml/qqmlregistration.h>
@@ -11,8 +10,6 @@ class Tag {
 	Q_GADGET
 	Q_PROPERTY(QUrl sheetmusicUrl MEMBER sheetMusicAlt CONSTANT)
 public:
-	explicit Tag(const QDomElement &node);
-
 	TagId id = 0;
 	QString title;
 	QString altTitle;

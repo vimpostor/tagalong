@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 26)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-list(APPEND QT_MODULES Core Qml Quick QuickControls2 Svg Pdf Network Xml)
+list(APPEND QT_MODULES Core Qml Quick QuickControls2 Svg Pdf Network Sql)
 find_package(Qt6 6.9 COMPONENTS ${QT_MODULES} REQUIRED)
 qt_standard_project_setup(REQUIRES ${Qt6_VERSION})
 list(TRANSFORM QT_MODULES PREPEND "Qt6::")

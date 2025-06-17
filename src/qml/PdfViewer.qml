@@ -6,6 +6,6 @@ PdfPageView {
 	property alias source: doc.source
 	document: PdfDocument { id: doc }
 	TapHandler {
-		onTapped: (p, b) => pdf.goToPage(pdf.currentPage + Math.sign(p.position.x - width / 2))
+		onTapped: (p, b) => pdf.goToPage(pdf.currentPage + Math.sign(p.position.x - pdf.width / 2))
 	}
 }

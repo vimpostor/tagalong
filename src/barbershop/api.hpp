@@ -2,6 +2,7 @@
 
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
+#include <QSqlDatabase>
 #include <QtQml/qqmlregistration.h>
 #include <quartz/macros.hpp>
 
@@ -11,15 +12,22 @@ class Api : public QObject {
 	Q_OBJECT
 	QML_ELEMENT
 	QML_SINGLETON
+
+	Q_PROPERTY(bool isSyncing MEMBER syncing NOTIFY syncingChanged)
 public:
 	QML_CPP_SINGLETON(Api)
 
 	void init();
 	Q_INVOKABLE void requestTag(TagId id);
+	void syncMetadata();
 signals:
 	void tagReady(Tag tag);
+	void syncingChanged();
 private:
 	void parseTags(QNetworkReply *res);
+	void initDb();
 
+	bool syncing = false;
 	QNetworkAccessManager manager;
+	QSqlDatabase db;
 };
