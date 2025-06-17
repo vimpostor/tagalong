@@ -7,8 +7,8 @@
 #include "backend.hpp"
 
 int main(int argc, char *argv[]) {
-	QCoreApplication::setOrganizationName("tag-along");
-	QCoreApplication::setApplicationName("tag-along");
+	QCoreApplication::setOrganizationName("tagalong");
+	QCoreApplication::setApplicationName("tagalong");
 	QGuiApplication app(argc, argv);
 
 	Api::get()->init();
