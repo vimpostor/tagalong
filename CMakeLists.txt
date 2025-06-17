@@ -33,4 +33,19 @@ target_link_libraries(${PROJECT_NAME} PRIVATE ${LINK_LIBS})
 quartz_link(${PROJECT_NAME})
 
 # install
-install(TARGETS ${PROJECT_NAME} RUNTIME)
+if(ANDROID)
+	# generate icons
+	list(APPEND ICON_COMMANDS COMMAND "sh" "-c" "mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/android/res/drawable-\\{l,m,h,xh,xxh,xxxh\\}dpi")
+	list(APPEND ICON_COMMANDS COMMAND "magick" "${CMAKE_SOURCE_DIR}/assets/tagalong.svg" "-resize" "36x36" "${CMAKE_CURRENT_BINARY_DIR}/android/res/drawable-ldpi/tagalong.png")
+	list(APPEND ICON_COMMANDS COMMAND "magick" "${CMAKE_SOURCE_DIR}/assets/tagalong.svg" "-resize" "48x48" "${CMAKE_CURRENT_BINARY_DIR}/android/res/drawable-mdpi/tagalong.png")
+	list(APPEND ICON_COMMANDS COMMAND "magick" "${CMAKE_SOURCE_DIR}/assets/tagalong.svg" "-resize" "72x72" "${CMAKE_CURRENT_BINARY_DIR}/android/res/drawable-hdpi/tagalong.png")
+	list(APPEND ICON_COMMANDS COMMAND "magick" "${CMAKE_SOURCE_DIR}/assets/tagalong.svg" "-resize" "96x96" "${CMAKE_CURRENT_BINARY_DIR}/android/res/drawable-xhdpi/tagalong.png")
+	list(APPEND ICON_COMMANDS COMMAND "magick" "${CMAKE_SOURCE_DIR}/assets/tagalong.svg" "-resize" "144x144" "${CMAKE_CURRENT_BINARY_DIR}/android/res/drawable-xxhdpi/tagalong.png")
+	list(APPEND ICON_COMMANDS COMMAND "magick" "${CMAKE_SOURCE_DIR}/assets/tagalong.svg" "-resize" "192x192" "${CMAKE_CURRENT_BINARY_DIR}/android/res/drawable-xxxhdpi/tagalong.png")
+	add_custom_target(android-integration ${ICON_COMMANDS})
+
+	string(REPLACE "." "" VERSION_CODE "${PROJECT_VERSION}")
+	set_target_properties(${PROJECT_NAME} PROPERTIES QT_ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/android" QT_ANDROID_PACKAGE_NAME "com.mggross.tagalong" QT_ANDROID_APP_ICON "@drawable/tagalong" QT_ANDROID_APP_NAME "Tag along" QT_ANDROID_VERSION_NAME "${PROJECT_VERSION}" QT_ANDROID_VERSION_CODE ${VERSION_CODE})
+else()
+	install(TARGETS ${PROJECT_NAME} RUNTIME)
+endif()
