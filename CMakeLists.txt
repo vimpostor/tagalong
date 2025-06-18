@@ -34,6 +34,12 @@ quartz_link(${PROJECT_NAME})
 
 # install
 if(ANDROID)
+	# openssl
+	FetchContent_Declare(android_openssl URL https://github.com/kdab/android_openssl/archive/refs/heads/master.zip)
+	FetchContent_MakeAvailable(android_openssl)
+	include(${android_openssl_SOURCE_DIR}/android_openssl.cmake)
+	add_android_openssl_libraries(${PROJECT_NAME})
+
 	# generate icons
 	list(APPEND ICON_COMMANDS COMMAND "sh" "-c" "mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/android/res/drawable-\\{l,m,h,xh,xxh,xxxh\\}dpi")
 	list(APPEND ICON_COMMANDS COMMAND "magick" "${CMAKE_SOURCE_DIR}/assets/${PROJECT_NAME}.svg" "-resize" "36x36" "${CMAKE_CURRENT_BINARY_DIR}/android/res/drawable-ldpi/${PROJECT_NAME}.png")
@@ -45,7 +51,7 @@ if(ANDROID)
 	add_custom_target(android-integration ${ICON_COMMANDS})
 
 	string(REPLACE "." "" VERSION_CODE "${PROJECT_VERSION}")
-	set_target_properties(${PROJECT_NAME} PROPERTIES QT_ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/android" QT_ANDROID_PACKAGE_NAME "com.mggross.${PROJECT_NAME}" QT_ANDROID_APP_ICON "@drawable/${PROJECT_NAME}" QT_ANDROID_APP_NAME "Tag along" QT_ANDROID_VERSION_NAME "${PROJECT_VERSION}" QT_ANDROID_VERSION_CODE ${VERSION_CODE})
+	set_target_properties(${PROJECT_NAME} PROPERTIES QT_ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/android" QT_ANDROID_PACKAGE_NAME "com.mggross.${PROJECT_NAME}" QT_ANDROID_APP_ICON "@drawable/${PROJECT_NAME}" QT_ANDROID_APP_NAME "Tag Along" QT_ANDROID_VERSION_NAME "${PROJECT_VERSION}" QT_ANDROID_VERSION_CODE ${VERSION_CODE})
 else()
 	install(TARGETS ${PROJECT_NAME} RUNTIME)
 endif()
