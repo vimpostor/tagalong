@@ -22,10 +22,7 @@ Item {
 
 	Image {
 		id: img
-		anchors.left: parent.left
-		anchors.right: parent.right
-		anchors.top: search.bottom
-		anchors.bottom: parent.bottom
+		anchors.fill: parent
 		anchors.margins: 8
 		fillMode: Image.PreserveAspectFit
 	}
