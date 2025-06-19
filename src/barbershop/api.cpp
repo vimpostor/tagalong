@@ -1,5 +1,6 @@
 #include "api.hpp"
 
+#include <QDir>
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QStandardPaths>
@@ -73,7 +74,14 @@ void Api::parseTags(QNetworkReply *res) {
 
 void Api::initDb() {
 	db = QSqlDatabase::addDatabase("QSQLITE");
-	db.setDatabaseName(QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + "/tagalong.sqlite");
+	const QDir dir {QStandardPaths::writableLocation(QStandardPaths::CacheLocation)};
+	if (!dir.exists()) {
+		if (!dir.mkpath(dir.path())) {
+			qWarning() << "Failed to create cache directory";
+			return;
+		}
+	}
+	db.setDatabaseName(dir.path() + "/tagalong.sqlite");
 	if (!db.open()) {
 		qWarning() << "Failed to open db:" << db.lastError().text();
 		return;
