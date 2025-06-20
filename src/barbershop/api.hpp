@@ -20,11 +20,14 @@ public:
 
 	void init();
 	Q_INVOKABLE void requestTag(TagId id);
+	std::vector<Tag> complete(QString query);
 	void syncMetadata();
 signals:
 	void tagReady(Tag tag);
 	void syncingChanged();
 private:
+	Tag tagFromQuery(QSqlQuery &q) const;
+	std::optional<Tag> tagFromId(TagId id) const;
 	void parseTags(QNetworkReply *res);
 	void initDb();
 

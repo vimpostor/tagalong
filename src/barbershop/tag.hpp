@@ -8,6 +8,8 @@ using TagId = int;
 
 class Tag {
 	Q_GADGET
+	Q_PROPERTY(int id MEMBER id CONSTANT)
+	Q_PROPERTY(QString title MEMBER title CONSTANT)
 	Q_PROPERTY(QUrl sheetmusicUrl MEMBER sheetMusicAlt CONSTANT)
 public:
 	TagId id = 0;

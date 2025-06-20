@@ -16,7 +16,7 @@ include(FetchContent)
 FetchContent_Declare(quartz GIT_REPOSITORY https://github.com/vimpostor/quartz.git GIT_TAG 1a16808833e9e7ee7350c53c0b412350284a1267)
 FetchContent_MakeAvailable(quartz)
 
-include_directories("src")
+include_directories("src" "src/barbershop")
 
 file(GLOB_RECURSE SRCS "src/*.cpp")
 file(GLOB_RECURSE HDRS "src/*.hpp")
@@ -26,7 +26,7 @@ qt_add_resources(RESOURCES "${CMAKE_SOURCE_DIR}/icons.qrc")
 
 qt_add_executable(${PROJECT_NAME} ${SRCS} ${RESOURCES})
 
-qt_add_qml_module(${PROJECT_NAME} URI "Backend" VERSION "${PROJECT_VERSION}" QML_FILES ${QMLS})
+qt_add_qml_module(${PROJECT_NAME} URI "Backend" VERSION "${PROJECT_VERSION}" QML_FILES ${QMLS} SOURCES "src/barbershop/tagcompletionsmodel.cpp")
 set_target_properties(${PROJECT_NAME} PROPERTIES QT_QMLCACHEGEN_ARGUMENTS "--only-bytecode")
 
 target_link_libraries(${PROJECT_NAME} PRIVATE ${LINK_LIBS})

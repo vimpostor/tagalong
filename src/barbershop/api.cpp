@@ -18,17 +18,35 @@ void Api::init() {
 }
 
 void Api::requestTag(TagId id) {
-	QSqlQuery q {"SELECT * FROM tags WHERE id = " + QString::number(id)};
-	if (!q.first()) {
-		qWarning() << "Tag not found";
-		return;
+	auto res = tagFromId(id);
+	if (res) {
+		emit tagReady(*res);
 	}
+}
 
-	Tag tag;
-	tag.id = q.value(0).toInt();
-	tag.title = q.value(1).toString();
-	tag.sheetMusicAlt = q.value(2).toUrl();
-	emit tagReady(tag);
+std::vector<Tag> Api::complete(QString query) {
+	if (!db.open() || query.isEmpty()) {
+		return {};
+	}
+	bool ok;
+	const auto id = query.toInt(&ok);
+	if (id > 0 && ok) {
+		// interpret as tag ID search
+		auto t = tagFromId(id);
+		if (t) {
+			return {*t};
+		}
+	}
+	QSqlQuery q;
+	q.prepare("SELECT * FROM tags WHERE title LIKE ?");
+	q.bindValue(0, "%" + query + "%");
+
+	std::vector<Tag> res;
+	q.exec();
+	while (q.next()) {
+		res.push_back(tagFromQuery(q));
+	}
+	return res;
 }
 
 void Api::syncMetadata() {
@@ -38,6 +56,25 @@ void Api::syncMetadata() {
 	manager.get(QNetworkRequest(req));
 	m_isSyncing = true;
 	emit syncingChanged();
+}
+
+Tag Api::tagFromQuery(QSqlQuery &q) const {
+	Tag res;
+	res.id = q.value(0).toInt();
+	res.title = q.value(1).toString();
+	res.sheetMusicAlt = q.value(2).toUrl();
+	return res;
+}
+
+std::optional<Tag> Api::tagFromId(TagId id) const {
+	QSqlQuery q {"SELECT * FROM tags WHERE id = " + QString::number(id)};
+	q.exec();
+	if (!q.first()) {
+		qWarning() << "Tag not found";
+		return std::nullopt;
+	}
+
+	return tagFromQuery(q);
 }
 
 void Api::parseTags(QNetworkReply *res) {
