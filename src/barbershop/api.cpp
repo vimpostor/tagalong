@@ -1,6 +1,7 @@
 #include "api.hpp"
 
 #include <QDir>
+#include <QGuiApplication>
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QStandardPaths>
@@ -35,14 +36,11 @@ void Api::syncMetadata() {
 	// cannot be bothered with pagination, just return all tags in one go
 	req.setQuery("n=9999");
 	manager.get(QNetworkRequest(req));
-	syncing = true;
+	m_isSyncing = true;
 	emit syncingChanged();
 }
 
 void Api::parseTags(QNetworkReply *res) {
-	syncing = false;
-	emit syncingChanged();
-
 	auto data = res->readAll();
 	if (data.startsWith("<?xml version=\"1.0\" encoding=\"UTF-8\"")) {
 		// API incorrectly reports the wrong encoding, which breaks XML parsing
@@ -53,11 +51,15 @@ void Api::parseTags(QNetworkReply *res) {
 	q.exec("CREATE TABLE tags(id INT PRIMARY KEY NOT NULL, title TEXT, sheetmusic TEXT)");
 	Tag tag;
 	bool invideo = false;
+	int tagsAvailable = 0;
+	int currentTag = 0;
 
 	while (!r.atEnd()) {
 		const auto token = r.readNext();
 		if (token == QXmlStreamReader::StartElement && !invideo) {
-			if (r.name() == "tag") {
+			if (r.name() == "tags") {
+				tagsAvailable = r.attributes().value("count").toInt();
+			} else if (r.name() == "tag") {
 				tag = {};
 			} else if (r.name() == "id") {
 				tag.id = r.readElementText().toInt();
@@ -76,12 +78,21 @@ void Api::parseTags(QNetworkReply *res) {
 				q.bindValue(1, tag.title);
 				q.bindValue(2, tag.sheetmusic.toString());
 				q.exec();
+
+				currentTag++;
+				if (tagsAvailable > 0) {
+					m_syncProgress = static_cast<float>(currentTag) / tagsAvailable;
+					emit syncingChanged();
+					QGuiApplication::processEvents();
+				}
 			} else if (r.name() == "videos") {
 				invideo = false;
 			}
 		}
 	}
 	res->deleteLater();
+	m_isSyncing = false;
+	emit syncingChanged();
 }
 
 void Api::initDb() {

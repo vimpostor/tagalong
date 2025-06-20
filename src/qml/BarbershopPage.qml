@@ -15,9 +15,23 @@ Item {
 		placeholderText: "Search Tags"
 		onSearched: Api.requestTag(parseInt(text))
 	}
-	BusyIndicator {
+	Dialog {
+		title: "Syncing"
+		visible: Api.isSyncing
 		anchors.centerIn: parent
-		running: Api.isSyncing
+		closePolicy: Popup.NoAutoClose
+		Column {
+			spacing: 8
+			Label {
+				text: progressbar.indeterminate ? "Downloading metadata" : "Parsing metadata"
+			}
+			ProgressBar {
+				id: progressbar
+				value: Api.syncProgress
+				onValueChanged: console.log(value)
+				indeterminate: !value
+			}
+		}
 	}
 
 	Image {

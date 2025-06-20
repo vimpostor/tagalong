@@ -13,7 +13,8 @@ class Api : public QObject {
 	QML_ELEMENT
 	QML_SINGLETON
 
-	Q_PROPERTY(bool isSyncing MEMBER syncing NOTIFY syncingChanged)
+	Q_PROPERTY(bool isSyncing MEMBER m_isSyncing NOTIFY syncingChanged)
+	Q_PROPERTY(float syncProgress MEMBER m_syncProgress NOTIFY syncingChanged)
 public:
 	QML_CPP_SINGLETON(Api)
 
@@ -27,7 +28,8 @@ private:
 	void parseTags(QNetworkReply *res);
 	void initDb();
 
-	bool syncing = false;
+	bool m_isSyncing = false;
+	float m_syncProgress = 0;
 	QNetworkAccessManager manager;
 	QSqlDatabase db;
 };
