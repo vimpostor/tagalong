@@ -25,4 +25,8 @@ AppWindow {
 			source: "file://" + Backend.documentSource
 		}
 	}
+	Snackbar {
+		text: Backend.snackbar
+		onTextChanged: open();
+	}
 }

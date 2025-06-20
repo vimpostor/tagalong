@@ -7,6 +7,8 @@
 #include <QStandardPaths>
 #include <QXmlStreamReader>
 
+#include "backend.hpp"
+
 const QUrl endpoint {"http://www.barbershoptags.com/api.php"};
 
 void Api::init() {
@@ -21,6 +23,8 @@ void Api::requestTag(TagId id) {
 	auto res = tagFromId(id);
 	if (res) {
 		emit tagReady(*res);
+	} else {
+		Backend::get()->notifySnackbar("Tag not found");
 	}
 }
 
@@ -53,7 +57,7 @@ void Api::syncMetadata() {
 	auto req = endpoint;
 	// cannot be bothered with pagination, just return all tags in one go
 	req.setQuery("n=9999");
-	manager.get(QNetworkRequest(req));
+	auto res = manager.get(QNetworkRequest(req));
 	m_isSyncing = true;
 	emit syncingChanged();
 }
@@ -70,7 +74,6 @@ std::optional<Tag> Api::tagFromId(TagId id) const {
 	QSqlQuery q {"SELECT * FROM tags WHERE id = " + QString::number(id)};
 	q.exec();
 	if (!q.first()) {
-		qWarning() << "Tag not found";
 		return std::nullopt;
 	}
 
@@ -78,6 +81,11 @@ std::optional<Tag> Api::tagFromId(TagId id) const {
 }
 
 void Api::parseTags(QNetworkReply *res) {
+	if (res->error()) {
+		Backend::get()->notifySnackbar("Network request failed: " + res->errorString());
+		return;
+	}
+
 	auto data = res->readAll();
 	if (data.startsWith("<?xml version=\"1.0\" encoding=\"UTF-8\"")) {
 		// API incorrectly reports the wrong encoding, which breaks XML parsing
@@ -136,7 +144,7 @@ void Api::parseTags(QNetworkReply *res) {
 		q.bindValue(bindpos++, t.sheetmusic.toString());
 	}
 	if (!q.exec()) {
-		qWarning() << "Failed to insert tags:" << q.lastError().text();
+		Backend::get()->notifySnackbar("Failed to insert tags: " + q.lastError().text());
 	}
 
 	res->deleteLater();
@@ -155,7 +163,7 @@ void Api::initDb() {
 	}
 	db.setDatabaseName(dir.path() + "/tagalong.sqlite");
 	if (!db.open()) {
-		qWarning() << "Failed to open db:" << db.lastError().text();
+		Backend::get()->notifySnackbar("Failed to open db: " + db.lastError().text());
 		return;
 	}
 }
