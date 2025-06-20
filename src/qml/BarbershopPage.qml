@@ -28,7 +28,6 @@ Item {
 			ProgressBar {
 				id: progressbar
 				value: Api.syncProgress
-				onValueChanged: console.log(value)
 				indeterminate: !value
 			}
 		}

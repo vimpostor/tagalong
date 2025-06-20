@@ -49,6 +49,7 @@ void Api::parseTags(QNetworkReply *res) {
 	QXmlStreamReader r {data};
 	QSqlQuery q;
 	q.exec("CREATE TABLE tags(id INT PRIMARY KEY NOT NULL, title TEXT, sheetmusic TEXT)");
+	std::vector<Tag> tags;
 	Tag tag;
 	bool invideo = false;
 	int tagsAvailable = 0;
@@ -59,6 +60,7 @@ void Api::parseTags(QNetworkReply *res) {
 		if (token == QXmlStreamReader::StartElement && !invideo) {
 			if (r.name() == "tags") {
 				tagsAvailable = r.attributes().value("count").toInt();
+				tags.reserve(tagsAvailable);
 			} else if (r.name() == "tag") {
 				tag = {};
 			} else if (r.name() == "id") {
@@ -72,13 +74,7 @@ void Api::parseTags(QNetworkReply *res) {
 			}
 		} else if (token == QXmlStreamReader::EndElement) {
 			if (r.name() == "tag") {
-				// insert tag
-				q.prepare("INSERT INTO tags VALUES (?, ?, ?)");
-				q.bindValue(0, tag.id);
-				q.bindValue(1, tag.title);
-				q.bindValue(2, tag.sheetmusic.toString());
-				q.exec();
-
+				tags.emplace_back(tag);
 				currentTag++;
 				if (tagsAvailable > 0) {
 					m_syncProgress = static_cast<float>(currentTag) / tagsAvailable;
@@ -90,6 +86,22 @@ void Api::parseTags(QNetworkReply *res) {
 			}
 		}
 	}
+
+	// insert tags
+	auto params = QString(" (?, ?, ?),").repeated(tags.size());
+	params.removeLast(); // remove trailing comma
+	q.prepare("INSERT INTO tags VALUES" + params);
+	int bindpos = 0;
+	for (size_t i = 0; i < tags.size(); ++i) {
+		const auto &t = tags[i];
+		q.bindValue(bindpos++, t.id);
+		q.bindValue(bindpos++, t.title);
+		q.bindValue(bindpos++, t.sheetmusic.toString());
+	}
+	if (!q.exec()) {
+		qWarning() << "Failed to insert tags:" << q.lastError().text();
+	}
+
 	res->deleteLater();
 	m_isSyncing = false;
 	emit syncingChanged();
