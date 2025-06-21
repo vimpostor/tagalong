@@ -21,6 +21,9 @@ public:
 
 	void init();
 	Q_INVOKABLE void requestTag(TagId id);
+	void downloadSheetmusic(Tag &tag);
+	void handleSheetmusic(QNetworkReply *reply, Tag tag);
+	void writeSheetmusic(Tag &tag);
 	std::vector<Tag> complete(QString query);
 	void syncMetadata();
 signals:

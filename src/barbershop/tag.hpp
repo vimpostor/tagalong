@@ -11,6 +11,7 @@ class Tag {
 	Q_PROPERTY(int id MEMBER id CONSTANT)
 	Q_PROPERTY(QString title MEMBER title CONSTANT)
 	Q_PROPERTY(QUrl sheetmusicUrl MEMBER sheetMusicAlt CONSTANT)
+	Q_PROPERTY(QUrl sheetmusiclocation MEMBER sheetmusiclocation CONSTANT)
 public:
 	TagId id = 0;
 	QString title;
@@ -30,4 +31,7 @@ public:
 	int downloaded = 0;
 	QUrl sheetmusic;
 	QUrl sheetMusicAlt;
+
+	QByteArray cachedsheetmusic;
+	QUrl sheetmusiclocation;
 };

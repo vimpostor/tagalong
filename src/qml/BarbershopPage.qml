@@ -56,11 +56,13 @@ Item {
 		anchors.fill: parent
 		anchors.margins: 8
 		fillMode: Image.PreserveAspectFit
+		cache: false
 	}
 	Connections {
 		target: Api
 		function onTagReady(tag) {
-			img.source = tag.sheetmusicUrl
+			img.source = "";
+			img.source = tag.sheetmusiclocation;
 		}
 	}
 }

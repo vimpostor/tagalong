@@ -19,11 +19,49 @@ void Api::init() {
 
 void Api::requestTag(TagId id) {
 	auto res = tagFromId(id);
-	if (res) {
-		emit tagReady(*res);
-	} else {
+	if (!res) {
 		Backend::get()->notifySnackbar("Tag not found");
+		return;
 	}
+
+	if (res->cachedsheetmusic.isEmpty()) {
+		downloadSheetmusic(*res);
+	} else {
+		writeSheetmusic(*res);
+	}
+}
+
+void Api::downloadSheetmusic(Tag &tag) {
+	auto res = manager.get(QNetworkRequest(tag.sheetMusicAlt));
+	connect(res, &QNetworkReply::finished, this, std::bind(&Api::handleSheetmusic, this, res, tag));
+}
+
+void Api::handleSheetmusic(QNetworkReply *reply, Tag tag) {
+	if (reply->error()) {
+		Backend::get()->notifySnackbar("Download failed: " + reply->errorString());
+		return;
+	}
+	tag.cachedsheetmusic = reply->readAll();
+	QSqlQuery q;
+	q.prepare("UPDATE tags SET cachedsheetmusic = ? WHERE id = ?");
+	q.bindValue(0, tag.cachedsheetmusic, QSql::ParamTypeFlag::In | QSql::ParamTypeFlag::Binary);
+	q.bindValue(1, tag.id);
+	if (!q.exec()) {
+		qWarning() << "Failed to store sheet music";
+		return;
+	}
+	writeSheetmusic(tag);
+
+	reply->deleteLater();
+}
+
+void Api::writeSheetmusic(Tag &tag) {
+	QFile f {QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + "/blob"};
+	f.open(QFile::OpenModeFlag::WriteOnly);
+	f.write(tag.cachedsheetmusic);
+	f.close();
+	tag.sheetmusiclocation = QUrl::fromLocalFile(f.fileName());
+	emit tagReady(tag);
 }
 
 std::vector<Tag> Api::complete(QString query) {
@@ -53,7 +91,7 @@ std::vector<Tag> Api::complete(QString query) {
 
 void Api::syncMetadata() {
 	QSqlQuery q;
-	q.exec("CREATE TABLE tags(id INT PRIMARY KEY NOT NULL, title TEXT, sheetmusic TEXT)");
+	q.exec("CREATE TABLE tags(id INT PRIMARY KEY NOT NULL, title TEXT, sheetmusic TEXT, cachedsheetmusic BLOB DEFAULT NULL)");
 	xml.clear();
 	pendingtags.clear();
 	invideo = false;
@@ -74,6 +112,7 @@ Tag Api::tagFromQuery(QSqlQuery &q) const {
 	res.id = q.value(0).toInt();
 	res.title = q.value(1).toString();
 	res.sheetMusicAlt = q.value(2).toUrl();
+	res.cachedsheetmusic = q.value(3).toByteArray();
 	return res;
 }
 
@@ -129,7 +168,7 @@ void Api::parseTags() {
 			}
 		} else if (token == QXmlStreamReader::EndDocument && xml.error() == QXmlStreamReader::Error::NoError) {
 			// insert tags
-			auto params = QString(" (?, ?, ?),").repeated(pendingtags.size());
+			auto params = QString(" (?, ?, ?, NULL),").repeated(pendingtags.size());
 			params.removeLast(); // remove trailing comma
 			QSqlQuery q;
 			q.prepare("INSERT INTO tags VALUES" + params);
