@@ -103,31 +103,29 @@ void Api::parseTags() {
 	while (!xml.atEnd()) {
 		const auto token = xml.readNext();
 		if (token == QXmlStreamReader::StartElement && !invideo) {
-			if (xml.name() == "tags") {
+			currentName = xml.name().toString();
+			if (currentName == "tags") {
 				tagsAvailable = xml.attributes().value("count").toInt();
 				pendingtags.reserve(tagsAvailable);
-			} else if (xml.name() == "tag") {
+			} else if (currentName == "tag") {
 				currenttag = {};
-			} else if (xml.name() == "id") {
-				currenttag.id = xml.readElementText().toInt();
-			} else if (xml.name() == "Title") {
-				currenttag.title = xml.readElementText();
-			} else if (xml.name() == "SheetMusic") {
-				currenttag.sheetmusic = xml.readElementText();
-			} else if (xml.name() == "videos") {
+			} else if (currentName == "videos") {
 				invideo = true;
 			}
 		} else if (token == QXmlStreamReader::EndElement) {
 			if (xml.name() == "tag") {
 				pendingtags.emplace_back(currenttag);
 				currentIndex++;
-				if (tagsAvailable > 0) {
-					m_syncProgress = static_cast<float>(currentIndex) / tagsAvailable;
-					emit syncingChanged();
-					QGuiApplication::processEvents();
-				}
 			} else if (xml.name() == "videos") {
 				invideo = false;
+			}
+		} else if (token == QXmlStreamReader::Characters && !invideo && !xml.isWhitespace()) {
+			if (currentName == "id") {
+				currenttag.id = xml.text().toInt();
+			} else if (currentName == "Title") {
+				currenttag.title = xml.text().toString();
+			} else if (currentName == "SheetMusic") {
+				currenttag.sheetmusic = xml.text().toString();
 			}
 		} else if (token == QXmlStreamReader::EndDocument && xml.error() == QXmlStreamReader::Error::NoError) {
 			// insert tags
@@ -151,6 +149,11 @@ void Api::parseTags() {
 			m_isSyncing = false;
 			emit syncingChanged();
 		}
+	}
+
+	if (m_isSyncing && tagsAvailable > 0) {
+		m_syncProgress = static_cast<float>(currentIndex) / tagsAvailable;
+		emit syncingChanged();
 	}
 }
 

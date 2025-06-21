@@ -45,4 +45,5 @@ private:
 	bool invideo = false;
 	int tagsAvailable = 0;
 	int currentIndex = 0;
+	QString currentName = "";
 };
