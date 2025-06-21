@@ -41,7 +41,7 @@ Item {
 		Column {
 			spacing: 8
 			Label {
-				text: progressbar.indeterminate ? "Downloading metadata" : "Parsing metadata"
+				text: "Downloading tags metadata"
 			}
 			ProgressBar {
 				id: progressbar

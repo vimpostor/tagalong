@@ -3,6 +3,7 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QSqlDatabase>
+#include <QXmlStreamReader>
 #include <QtQml/qqmlregistration.h>
 #include <quartz/macros.hpp>
 
@@ -28,11 +29,20 @@ signals:
 private:
 	Tag tagFromQuery(QSqlQuery &q) const;
 	std::optional<Tag> tagFromId(TagId id) const;
-	void parseTags(QNetworkReply *res);
+	void parseTags();
 	void initDb();
 
 	bool m_isSyncing = false;
 	float m_syncProgress = 0;
 	QNetworkAccessManager manager;
 	QSqlDatabase db;
+
+	// parsing
+	QNetworkReply *reply = nullptr;
+	QXmlStreamReader xml;
+	std::vector<Tag> pendingtags;
+	Tag currenttag;
+	bool invideo = false;
+	int tagsAvailable = 0;
+	int currentIndex = 0;
 };

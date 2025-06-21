@@ -5,14 +5,12 @@
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QStandardPaths>
-#include <QXmlStreamReader>
 
 #include "backend.hpp"
 
 const QUrl endpoint {"http://www.barbershoptags.com/api.php"};
 
 void Api::init() {
-	connect(&manager, &QNetworkAccessManager::finished, this, &Api::parseTags);
 	initDb();
 	if (db.tables().empty()) {
 		syncMetadata();
@@ -54,10 +52,19 @@ std::vector<Tag> Api::complete(QString query) {
 }
 
 void Api::syncMetadata() {
+	QSqlQuery q;
+	q.exec("CREATE TABLE tags(id INT PRIMARY KEY NOT NULL, title TEXT, sheetmusic TEXT)");
+	xml.clear();
+	pendingtags.clear();
+	invideo = false;
+	tagsAvailable = 0;
+	currentIndex = 0;
+
 	auto req = endpoint;
 	// cannot be bothered with pagination, just return all tags in one go
 	req.setQuery("n=9999");
-	auto res = manager.get(QNetworkRequest(req));
+	reply = manager.get(QNetworkRequest(req));
+	connect(reply, &QNetworkReply::readyRead, this, &Api::parseTags);
 	m_isSyncing = true;
 	emit syncingChanged();
 }
@@ -80,76 +87,71 @@ std::optional<Tag> Api::tagFromId(TagId id) const {
 	return tagFromQuery(q);
 }
 
-void Api::parseTags(QNetworkReply *res) {
-	if (res->error()) {
-		Backend::get()->notifySnackbar("Network request failed: " + res->errorString());
+void Api::parseTags() {
+	if (reply->error()) {
+		Backend::get()->notifySnackbar("Network request failed: " + reply->errorString());
 		return;
 	}
 
-	auto data = res->readAll();
-	if (data.startsWith("<?xml version=\"1.0\" encoding=\"UTF-8\"")) {
+	auto data = reply->readAll();
+	if (!currentIndex && data.startsWith("<?xml version=\"1.0\" encoding=\"UTF-8\"")) {
 		// API incorrectly reports the wrong encoding, which breaks XML parsing
 		data.replace(30, 5, "ISO-8859-1");
 	}
-	QXmlStreamReader r {data};
-	QSqlQuery q;
-	q.exec("CREATE TABLE tags(id INT PRIMARY KEY NOT NULL, title TEXT, sheetmusic TEXT)");
-	std::vector<Tag> tags;
-	Tag tag;
-	bool invideo = false;
-	int tagsAvailable = 0;
-	int currentTag = 0;
+	xml.addData(data);
 
-	while (!r.atEnd()) {
-		const auto token = r.readNext();
+	while (!xml.atEnd()) {
+		const auto token = xml.readNext();
 		if (token == QXmlStreamReader::StartElement && !invideo) {
-			if (r.name() == "tags") {
-				tagsAvailable = r.attributes().value("count").toInt();
-				tags.reserve(tagsAvailable);
-			} else if (r.name() == "tag") {
-				tag = {};
-			} else if (r.name() == "id") {
-				tag.id = r.readElementText().toInt();
-			} else if (r.name() == "Title") {
-				tag.title = r.readElementText();
-			} else if (r.name() == "SheetMusic") {
-				tag.sheetmusic = r.readElementText();
-			} else if (r.name() == "videos") {
+			if (xml.name() == "tags") {
+				tagsAvailable = xml.attributes().value("count").toInt();
+				pendingtags.reserve(tagsAvailable);
+			} else if (xml.name() == "tag") {
+				currenttag = {};
+			} else if (xml.name() == "id") {
+				currenttag.id = xml.readElementText().toInt();
+			} else if (xml.name() == "Title") {
+				currenttag.title = xml.readElementText();
+			} else if (xml.name() == "SheetMusic") {
+				currenttag.sheetmusic = xml.readElementText();
+			} else if (xml.name() == "videos") {
 				invideo = true;
 			}
 		} else if (token == QXmlStreamReader::EndElement) {
-			if (r.name() == "tag") {
-				tags.emplace_back(tag);
-				currentTag++;
+			if (xml.name() == "tag") {
+				pendingtags.emplace_back(currenttag);
+				currentIndex++;
 				if (tagsAvailable > 0) {
-					m_syncProgress = static_cast<float>(currentTag) / tagsAvailable;
+					m_syncProgress = static_cast<float>(currentIndex) / tagsAvailable;
 					emit syncingChanged();
 					QGuiApplication::processEvents();
 				}
-			} else if (r.name() == "videos") {
+			} else if (xml.name() == "videos") {
 				invideo = false;
 			}
+		} else if (token == QXmlStreamReader::EndDocument && xml.error() == QXmlStreamReader::Error::NoError) {
+			// insert tags
+			auto params = QString(" (?, ?, ?),").repeated(pendingtags.size());
+			params.removeLast(); // remove trailing comma
+			QSqlQuery q;
+			q.prepare("INSERT INTO tags VALUES" + params);
+			int bindpos = 0;
+			for (size_t i = 0; i < pendingtags.size(); ++i) {
+				const auto &t = pendingtags[i];
+				q.bindValue(bindpos++, t.id);
+				q.bindValue(bindpos++, t.title);
+				q.bindValue(bindpos++, t.sheetmusic.toString());
+			}
+			if (!q.exec()) {
+				Backend::get()->notifySnackbar("Failed to insert tags: " + q.lastError().text());
+			}
+
+			pendingtags.clear();
+			reply->deleteLater();
+			m_isSyncing = false;
+			emit syncingChanged();
 		}
 	}
-
-	// insert tags
-	auto params = QString(" (?, ?, ?),").repeated(tags.size());
-	params.removeLast(); // remove trailing comma
-	q.prepare("INSERT INTO tags VALUES" + params);
-	int bindpos = 0;
-	for (size_t i = 0; i < tags.size(); ++i) {
-		const auto &t = tags[i];
-		q.bindValue(bindpos++, t.id);
-		q.bindValue(bindpos++, t.title);
-		q.bindValue(bindpos++, t.sheetmusic.toString());
-	}
-	if (!q.exec()) {
-		Backend::get()->notifySnackbar("Failed to insert tags: " + q.lastError().text());
-	}
-
-	res->deleteLater();
-	m_isSyncing = false;
-	emit syncingChanged();
 }
 
 void Api::initDb() {
