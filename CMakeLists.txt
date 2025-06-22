@@ -21,6 +21,9 @@ include_directories("src" "src/barbershop")
 file(GLOB_RECURSE SRCS "src/*.cpp")
 file(GLOB_RECURSE HDRS "src/*.hpp")
 file(GLOB_RECURSE QMLS RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "src/qml/*.qml")
+if(ANDROID)
+	list(APPEND SRCS "android/src/com/mggross/tagalong/QtIntentActivity.java")
+endif()
 
 qt_add_resources(RESOURCES "${CMAKE_SOURCE_DIR}/icons.qrc")
 
