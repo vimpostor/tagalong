@@ -14,16 +14,11 @@ AppWindow {
 	Material.accent: Material.Pink
 	BarbershopPage {
 		anchors.fill: parent
-		visible: !loader.active
+		visible: !Backend.documentType.length
 	}
-	Loader {
-		id: loader
+	SheetmusicView {
 		anchors.fill: parent
-		active: Backend.documentSource != ""
-		sourceComponent: PdfViewer {
-			anchors.fill: parent
-			source: "file://" + Backend.documentSource
-		}
+		visible: Backend.documentType.length
 	}
 	Snackbar {
 		text: Backend.snackbar

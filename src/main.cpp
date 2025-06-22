@@ -13,7 +13,8 @@ int main(int argc, char *argv[]) {
 
 	Api::get()->init();
 	if (argc > 1) {
-		Backend::get()->document = argv[1];
+		Backend::get()->setDocumentSource(QUrl::fromLocalFile(argv[1]));
+		Backend::get()->setDocumentType("pdf");
 	}
 
 	QGuiApplication::setWindowIcon(QIcon::fromTheme("tagalong", QIcon(":/tagalong")));

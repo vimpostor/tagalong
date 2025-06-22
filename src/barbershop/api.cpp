@@ -61,7 +61,9 @@ void Api::writeSheetmusic(Tag &tag) {
 	f.write(tag.cachedsheetmusic);
 	f.close();
 	tag.sheetmusiclocation = QUrl::fromLocalFile(f.fileName());
-	emit tagReady(tag);
+	Backend::get()->setDocumentSource(tag.sheetmusiclocation);
+	const auto suffix = QFileInfo(tag.sheetMusicAlt.toString()).suffix();
+	Backend::get()->setDocumentType(suffix == "pdf" ? "pdf" : "png");
 }
 
 std::vector<Tag> Api::complete(QString query) {

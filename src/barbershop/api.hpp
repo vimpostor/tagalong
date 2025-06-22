@@ -27,7 +27,6 @@ public:
 	std::vector<Tag> complete(QString query);
 	void syncMetadata();
 signals:
-	void tagReady(Tag tag);
 	void syncingChanged();
 private:
 	Tag tagFromQuery(QSqlQuery &q) const;
