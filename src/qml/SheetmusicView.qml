@@ -1,6 +1,5 @@
 import QtQuick
 
-import Quartz
 import Backend
 
 Item {
@@ -12,11 +11,5 @@ Item {
 			anchors.fill: parent
 			source: Backend.documentSource
 		}
-	}
-	IconButton {
-		anchors.right: parent.right
-		anchors.top: parent.top
-		ico.name: "close"
-		onClicked: Backend.documentType = ""
 	}
 }
