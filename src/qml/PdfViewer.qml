@@ -1,11 +1,15 @@
 import QtQuick
 import QtQuick.Pdf
 
-PdfPageView {
-	id: pdf
-	property alias source: doc.source
-	document: PdfDocument { id: doc }
-	TapHandler {
-		onTapped: (p, b) => pdf.goToPage(pdf.currentPage + Math.sign(p.position.x - pdf.width / 2))
+Rectangle {
+	property alias source: pdf.source
+	color: "#FFFFFF"
+	Image {
+		id: pdf
+		anchors.fill: parent
+		fillMode: Image.PreserveAspectFit
+		TapHandler {
+			onTapped: (p, b) => pdf.currentFrame += (p.position.x > pdf.width / 3 * 2) - (p.position.x < pdf.width / 3)
+		}
 	}
 }

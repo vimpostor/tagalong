@@ -7,18 +7,11 @@ Item {
 	Loader {
 		id: loader
 		anchors.fill: parent
-		active: Backend.documentType == "pdf"
+		active: Backend.documentType.length
 		sourceComponent: PdfViewer {
 			anchors.fill: parent
 			source: Backend.documentSource
 		}
-	}
-	Image {
-		id: img
-		anchors.fill: parent
-		fillMode: Image.PreserveAspectFit
-		cache: false
-		source: Backend.documentType == "png" ? Backend.documentSource : ""
 	}
 	IconButton {
 		anchors.right: parent.right

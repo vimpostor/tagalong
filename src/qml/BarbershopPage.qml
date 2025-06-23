@@ -7,7 +7,6 @@ import Backend
 Item {
 	Search {
 		id: search
-		focus: true
 		anchors.left: parent.left
 		anchors.right: parent.right
 		anchors.top: parent.top
