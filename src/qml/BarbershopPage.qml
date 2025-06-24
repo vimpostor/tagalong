@@ -24,8 +24,10 @@ Item {
 		anchors.right: search.right
 		anchors.bottom: parent.bottom
 		model: TagCompletionsModel
-		delegate: Button {
+		clip: true
+		delegate: IconButton {
 			text: modelData.title + " (" + modelData.id + ")"
+			ico.name: "search"
 			onClicked: {
 				Api.requestTag(modelData.id);
 				TagCompletionsModel.reset();
