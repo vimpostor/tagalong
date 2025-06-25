@@ -13,24 +13,42 @@ Item {
 		anchors.margins: 16
 		placeholderText: "Search Tags"
 		onSearched: {
-			Api.requestTag(parseInt(text))
-			TagCompletionsModel.reset();
+			const t = parseInt(text)
+			if (t) {
+				Api.requestTag(t)
+				TagCompletionsModel.reset();
+			}
 		}
 		onTextChanged: TagCompletionsModel.complete(text);
 	}
 	ListView {
+		id: listview
 		anchors.top: search.bottom
 		anchors.left: search.left
 		anchors.right: search.right
 		anchors.bottom: parent.bottom
+		anchors.topMargin: 8
 		model: TagCompletionsModel
 		clip: true
-		delegate: IconButton {
-			text: modelData.title + " (" + modelData.id + ")"
-			ico.name: "search"
-			onClicked: {
-				Api.requestTag(modelData.id);
-				TagCompletionsModel.reset();
+		spacing: 8
+		delegate: Card {
+			width: listview.width
+			height: 50
+			Column {
+				anchors.fill: parent
+				anchors.margins: 8
+				Label {
+					text: modelData.title
+				}
+				Label {
+					text: "ID: " + modelData.id
+				}
+			}
+			TapHandler {
+				onSingleTapped: {
+					Api.requestTag(modelData.id);
+					TagCompletionsModel.reset();
+				}
 			}
 		}
 	}
