@@ -9,30 +9,36 @@ Item {
 	ColumnLayout {
 		anchors.fill: parent
 		anchors.margins: 16
-		RowLayout {
+		Search {
+			id: search
+			property bool insearch: false
 			Layout.fillWidth: true
-			Search {
-				id: search
-				Layout.fillWidth: true
-				placeholderText: "Search Tags"
-				onSearched: {
-					const t = parseInt(text)
-					if (t) {
-						Api.requestTag(t)
-						TagCompletionsModel.reset();
-					}
+			placeholderText: "Search Tags"
+			onSearched: {
+				search.insearch = false;
+				const t = parseInt(text)
+				if (t) {
+					Api.requestTag(t)
+					TagCompletionsModel.reset();
 				}
-				onTextChanged: TagCompletionsModel.complete(text);
 			}
-			IconButton {
-				ico.name: "manage_search"
-				onClicked: chipflow.visible = !chipflow.visible
+			onTextChanged: {
+				search.insearch = true;
+				TagCompletionsModel.complete(text);
+			}
+			onFocusChanged: {
+				if (focus) {
+					search.insearch = true;
+				}
 			}
 		}
 		ChipFlow {
-			id: chipflow
 			Layout.fillWidth: true
-			visible: false
+			clip: true
+			implicitHeight: contentHeight * search.insearch
+			Behavior on implicitHeight {
+				NumberAnimation { duration: 300; easing.type: Easing.OutCirc; }
+			}
 			Chip {
 				type: Chip.Type.Filter
 				text: collections.currentIndex + 1 ? collections.currentText : "Collection"
