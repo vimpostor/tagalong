@@ -13,7 +13,7 @@ list(TRANSFORM QT_MODULES PREPEND "Qt6::")
 list(APPEND LINK_LIBS ${QT_MODULES})
 
 include(FetchContent)
-FetchContent_Declare(quartz GIT_REPOSITORY https://github.com/vimpostor/quartz.git GIT_TAG 3bfaa1bbc01acb71b5ad350776457d2082736463)
+FetchContent_Declare(quartz GIT_REPOSITORY https://github.com/vimpostor/quartz.git GIT_TAG bcca5a758cf5087f09e243e8b3f6600322a8464f)
 FetchContent_MakeAvailable(quartz)
 
 include_directories("src" "src/barbershop")
