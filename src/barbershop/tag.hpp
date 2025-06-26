@@ -18,7 +18,6 @@ class Tag {
 	Q_PROPERTY(QString arranger MEMBER arranger CONSTANT)
 	Q_PROPERTY(QString arranged MEMBER arranged CONSTANT)
 	Q_PROPERTY(QString sungBy MEMBER sungBy CONSTANT)
-	Q_PROPERTY(QString sungYear MEMBER sungYear CONSTANT)
 	Q_PROPERTY(QString quartet MEMBER quartet CONSTANT)
 	Q_PROPERTY(QDate posted MEMBER posted CONSTANT)
 	Q_PROPERTY(QString collection MEMBER collection CONSTANT)
@@ -39,7 +38,6 @@ public:
 	QString arranger;
 	QString arranged;
 	QString sungBy;
-	QString sungYear;
 	QString quartet;
 	QDate posted;
 	QString collection;

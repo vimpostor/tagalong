@@ -93,7 +93,7 @@ std::vector<Tag> Api::complete(QString query) {
 
 void Api::syncMetadata() {
 	QSqlQuery q;
-	q.exec("CREATE TABLE tags(id INT PRIMARY KEY NOT NULL, title TEXT, sheetmusic TEXT, cachedsheetmusic BLOB DEFAULT NULL)");
+	q.exec("CREATE TABLE tags(id INT PRIMARY KEY NOT NULL, title TEXT, alttitle TEXT, key TEXT, parts INT, notes TEXT, arranger TEXT, arranged TEXT, sungby TEXT, quartet TEXT, posted INT, collection TEXT, rating REAL, ratingcount INT, downloaded INT, sheetmusic TEXT, sheetmusicalt TEXT, cachedsheetmusic BLOB DEFAULT NULL)");
 	xml.clear();
 	pendingtags.clear();
 	invideo = false;
@@ -113,8 +113,22 @@ Tag Api::tagFromQuery(QSqlQuery &q) const {
 	Tag res;
 	res.id = q.value(0).toInt();
 	res.title = q.value(1).toString();
-	res.sheetMusicAlt = q.value(2).toUrl();
-	res.cachedsheetmusic = q.value(3).toByteArray();
+	res.altTitle = q.value(2).toString();
+	res.key = q.value(3).toString();
+	res.parts = q.value(4).toInt();
+	res.notes = q.value(5).toString();
+	res.arranger = q.value(6).toString();
+	res.arranged = q.value(7).toString();
+	res.sungBy = q.value(8).toString();
+	res.quartet = q.value(9).toString();
+	res.posted = QDate::fromJulianDay(q.value(10).toInt());
+	res.collection = q.value(11).toString();
+	res.rating = q.value(12).toFloat();
+	res.ratingCount = q.value(13).toInt();
+	res.downloaded = q.value(14).toInt();
+	res.sheetmusic = q.value(15).toUrl();
+	res.sheetMusicAlt = q.value(16).toUrl();
+	res.cachedsheetmusic = q.value(17).toByteArray();
 	return res;
 }
 
@@ -179,8 +193,6 @@ void Api::parseTags() {
 				currenttag.arranged = xml.text().toString();
 			} else if (currentName == "SungBy") {
 				currenttag.sungBy = xml.text().toString();
-			} else if (currentName == "SungYear") {
-				currenttag.sungYear = xml.text().toString();
 			} else if (currentName == "Quartet") {
 				currenttag.quartet = xml.text().toString();
 			} else if (currentName == "Posted") {
@@ -200,7 +212,7 @@ void Api::parseTags() {
 			}
 		} else if (token == QXmlStreamReader::EndDocument && xml.error() == QXmlStreamReader::Error::NoError) {
 			// insert tags
-			auto params = QString(" (?, ?, ?, NULL),").repeated(pendingtags.size());
+			auto params = QString(" (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL),").repeated(pendingtags.size());
 			params.removeLast(); // remove trailing comma
 			QSqlQuery q;
 			q.prepare("INSERT INTO tags VALUES" + params);
@@ -209,7 +221,21 @@ void Api::parseTags() {
 				const auto &t = pendingtags[i];
 				q.bindValue(bindpos++, t.id);
 				q.bindValue(bindpos++, t.title);
+				q.bindValue(bindpos++, t.altTitle);
+				q.bindValue(bindpos++, t.key);
+				q.bindValue(bindpos++, t.parts);
+				q.bindValue(bindpos++, t.notes);
+				q.bindValue(bindpos++, t.arranger);
+				q.bindValue(bindpos++, t.arranged);
+				q.bindValue(bindpos++, t.sungBy);
+				q.bindValue(bindpos++, t.quartet);
+				q.bindValue(bindpos++, t.posted.toJulianDay());
+				q.bindValue(bindpos++, t.collection);
+				q.bindValue(bindpos++, t.rating);
+				q.bindValue(bindpos++, t.ratingCount);
+				q.bindValue(bindpos++, t.downloaded);
 				q.bindValue(bindpos++, t.sheetmusic.toString());
+				q.bindValue(bindpos++, t.sheetMusicAlt.toString());
 			}
 			if (!q.exec()) {
 				Backend::get()->notifySnackbar("Failed to insert tags: " + q.lastError().text());
