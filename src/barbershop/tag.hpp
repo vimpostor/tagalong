@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QDate>
 #include <QObject>
 #include <QUrl>
 #include <QtQml/qqmlregistration.h>
@@ -19,7 +20,7 @@ class Tag {
 	Q_PROPERTY(QString sungBy MEMBER sungBy CONSTANT)
 	Q_PROPERTY(QString sungYear MEMBER sungYear CONSTANT)
 	Q_PROPERTY(QString quartet MEMBER quartet CONSTANT)
-	Q_PROPERTY(QString posted MEMBER posted CONSTANT)
+	Q_PROPERTY(QDate posted MEMBER posted CONSTANT)
 	Q_PROPERTY(QString collection MEMBER collection CONSTANT)
 	Q_PROPERTY(float rating MEMBER rating CONSTANT)
 	Q_PROPERTY(int ratingCount MEMBER ratingCount CONSTANT)
@@ -27,7 +28,6 @@ class Tag {
 	Q_PROPERTY(QUrl sheetmusic MEMBER sheetmusic CONSTANT)
 	Q_PROPERTY(QUrl sheetMusicAlt MEMBER sheetMusicAlt CONSTANT)
 
-	Q_PROPERTY(QUrl sheetmusicUrl MEMBER sheetMusicAlt CONSTANT)
 	Q_PROPERTY(QUrl sheetmusiclocation MEMBER sheetmusiclocation CONSTANT)
 public:
 	TagId id = 0;
@@ -41,7 +41,7 @@ public:
 	QString sungBy;
 	QString sungYear;
 	QString quartet;
-	QString posted;
+	QDate posted;
 	QString collection;
 	float rating = 0;
 	int ratingCount = 0;

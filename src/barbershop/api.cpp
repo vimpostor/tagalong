@@ -165,8 +165,38 @@ void Api::parseTags() {
 				currenttag.id = xml.text().toInt();
 			} else if (currentName == "Title") {
 				currenttag.title = xml.text().toString();
+			} else if (currentName == "AltTitle") {
+				currenttag.altTitle = xml.text().toString();
+			} else if (currentName == "WritKey") {
+				currenttag.key = xml.text().toString();
+			} else if (currentName == "Parts") {
+				currenttag.parts = xml.text().toInt();
+			} else if (currentName == "Notes") {
+				currenttag.notes = xml.text().toString();
+			} else if (currentName == "Arranger") {
+				currenttag.arranger = xml.text().toString();
+			} else if (currentName == "Arranged") {
+				currenttag.arranged = xml.text().toString();
+			} else if (currentName == "SungBy") {
+				currenttag.sungBy = xml.text().toString();
+			} else if (currentName == "SungYear") {
+				currenttag.sungYear = xml.text().toString();
+			} else if (currentName == "Quartet") {
+				currenttag.quartet = xml.text().toString();
+			} else if (currentName == "Posted") {
+				currenttag.posted = QDate::fromString(xml.text().toString(), Qt::DateFormat::RFC2822Date);
+			} else if (currentName == "Collection") {
+				currenttag.collection = xml.text().toString();
+			} else if (currentName == "Rating") {
+				currenttag.rating = xml.text().toFloat();
+			} else if (currentName == "RatingCount") {
+				currenttag.ratingCount = xml.text().toInt();
+			} else if (currentName == "Downloaded") {
+				currenttag.downloaded = xml.text().toInt();
 			} else if (currentName == "SheetMusic") {
 				currenttag.sheetmusic = xml.text().toString();
+			} else if (currentName == "SheetMusicAlt") {
+				currenttag.sheetMusicAlt = xml.text().toString();
 			}
 		} else if (token == QXmlStreamReader::EndDocument && xml.error() == QXmlStreamReader::Error::NoError) {
 			// insert tags
