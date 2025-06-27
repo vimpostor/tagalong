@@ -155,8 +155,9 @@ void Api::parseTags() {
 	}
 	xml.addData(data);
 
+	QXmlStreamReader::TokenType token = QXmlStreamReader::TokenType::NoToken;
 	while (!xml.atEnd()) {
-		const auto token = xml.readNext();
+		token = xml.readNext();
 		if (token == QXmlStreamReader::StartElement && !invideo) {
 			currentName = xml.name().toString();
 			if (currentName == "tags") {
@@ -210,46 +211,50 @@ void Api::parseTags() {
 			} else if (currentName == "SheetMusicAlt") {
 				currenttag.sheetMusicAlt = xml.text().toString();
 			}
-		} else if (token == QXmlStreamReader::EndDocument && xml.error() == QXmlStreamReader::Error::NoError) {
-			// insert tags
-			auto params = QString(" (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL),").repeated(pendingtags.size());
-			params.removeLast(); // remove trailing comma
-			QSqlQuery q;
-			q.prepare("INSERT INTO tags VALUES" + params);
-			int bindpos = 0;
-			for (size_t i = 0; i < pendingtags.size(); ++i) {
-				const auto &t = pendingtags[i];
-				q.bindValue(bindpos++, t.id);
-				q.bindValue(bindpos++, t.title);
-				q.bindValue(bindpos++, t.altTitle);
-				q.bindValue(bindpos++, t.key);
-				q.bindValue(bindpos++, t.parts);
-				q.bindValue(bindpos++, t.notes);
-				q.bindValue(bindpos++, t.arranger);
-				q.bindValue(bindpos++, t.arranged);
-				q.bindValue(bindpos++, t.sungBy);
-				q.bindValue(bindpos++, t.quartet);
-				q.bindValue(bindpos++, t.posted.toJulianDay());
-				q.bindValue(bindpos++, t.collection);
-				q.bindValue(bindpos++, t.rating);
-				q.bindValue(bindpos++, t.ratingCount);
-				q.bindValue(bindpos++, t.downloaded);
-				q.bindValue(bindpos++, t.sheetmusic.toString());
-				q.bindValue(bindpos++, t.sheetMusicAlt.toString());
-			}
-			if (!q.exec()) {
-				Backend::get()->notifySnackbar("Failed to insert tags: " + q.lastError().text());
-			}
-
-			pendingtags.clear();
-			reply->deleteLater();
-			m_isSyncing = false;
-			emit syncingChanged();
 		}
 	}
 
-	if (m_isSyncing && tagsAvailable > 0) {
+	if (tagsAvailable > 0) {
 		m_syncProgress = static_cast<float>(currentIndex) / tagsAvailable;
+		emit syncingChanged();
+	}
+
+	if (token == QXmlStreamReader::EndDocument && xml.error() == QXmlStreamReader::Error::NoError) {
+		// notify progress
+		QGuiApplication::processEvents();
+		// insert tags
+		auto params = QString(" (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL),").repeated(pendingtags.size());
+		params.removeLast(); // remove trailing comma
+		QSqlQuery q;
+		q.prepare("INSERT INTO tags VALUES" + params);
+		int bindpos = 0;
+		for (size_t i = 0; i < pendingtags.size(); ++i) {
+			const auto &t = pendingtags[i];
+			q.bindValue(bindpos++, t.id);
+			q.bindValue(bindpos++, t.title);
+			q.bindValue(bindpos++, t.altTitle);
+			q.bindValue(bindpos++, t.key);
+			q.bindValue(bindpos++, t.parts);
+			q.bindValue(bindpos++, t.notes);
+			q.bindValue(bindpos++, t.arranger);
+			q.bindValue(bindpos++, t.arranged);
+			q.bindValue(bindpos++, t.sungBy);
+			q.bindValue(bindpos++, t.quartet);
+			q.bindValue(bindpos++, t.posted.toJulianDay());
+			q.bindValue(bindpos++, t.collection);
+			q.bindValue(bindpos++, t.rating);
+			q.bindValue(bindpos++, t.ratingCount);
+			q.bindValue(bindpos++, t.downloaded);
+			q.bindValue(bindpos++, t.sheetmusic.toString());
+			q.bindValue(bindpos++, t.sheetMusicAlt.toString());
+		}
+		if (!q.exec()) {
+			Backend::get()->notifySnackbar("Failed to insert tags: " + q.lastError().text());
+		}
+
+		pendingtags.clear();
+		reply->deleteLater();
+		m_isSyncing = false;
 		emit syncingChanged();
 	}
 }
