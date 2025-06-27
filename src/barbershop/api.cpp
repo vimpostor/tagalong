@@ -219,9 +219,7 @@ void Api::parseTags() {
 		emit syncingChanged();
 	}
 
-	if (token == QXmlStreamReader::EndDocument && xml.error() == QXmlStreamReader::Error::NoError) {
-		// notify progress
-		QGuiApplication::processEvents();
+	if (pendingtags.size()) {
 		// insert tags
 		auto params = QString(" (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL),").repeated(pendingtags.size());
 		params.removeLast(); // remove trailing comma
@@ -253,6 +251,8 @@ void Api::parseTags() {
 		}
 
 		pendingtags.clear();
+	}
+	if (token == QXmlStreamReader::EndDocument && xml.error() == QXmlStreamReader::Error::NoError) {
 		reply->deleteLater();
 		m_isSyncing = false;
 		emit syncingChanged();
