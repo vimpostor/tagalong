@@ -16,6 +16,7 @@ class Api : public QObject {
 
 	Q_PROPERTY(bool isSyncing MEMBER m_isSyncing NOTIFY syncingChanged)
 	Q_PROPERTY(float syncProgress MEMBER m_syncProgress NOTIFY syncingChanged)
+	Q_PROPERTY(bool downloadActive MEMBER m_downloadActive NOTIFY downloadActiveChanged)
 public:
 	QML_CPP_SINGLETON(Api)
 
@@ -28,14 +29,17 @@ public:
 	void syncMetadata();
 signals:
 	void syncingChanged();
+	void downloadActiveChanged();
 private:
 	Tag tagFromQuery(QSqlQuery &q) const;
 	std::optional<Tag> tagFromId(TagId id) const;
 	void parseTags();
+	void handleTagsFinished();
 	void initDb();
 
 	bool m_isSyncing = false;
 	float m_syncProgress = 0;
+	bool m_downloadActive = false;
 	QNetworkAccessManager manager;
 	QSqlDatabase db;
 

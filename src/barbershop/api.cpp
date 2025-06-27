@@ -35,9 +35,14 @@ void Api::requestTag(TagId id) {
 void Api::downloadSheetmusic(Tag &tag) {
 	auto res = manager.get(QNetworkRequest(tag.sheetMusicAlt));
 	connect(res, &QNetworkReply::finished, this, std::bind(&Api::handleSheetmusic, this, res, tag));
+	m_downloadActive = true;
+	emit downloadActiveChanged();
 }
 
 void Api::handleSheetmusic(QNetworkReply *reply, Tag tag) {
+	reply->deleteLater();
+	m_downloadActive = false;
+	emit downloadActiveChanged();
 	if (reply->error()) {
 		Backend::get()->notifySnackbar("Download failed: " + reply->errorString());
 		return;
@@ -52,8 +57,6 @@ void Api::handleSheetmusic(QNetworkReply *reply, Tag tag) {
 		return;
 	}
 	writeSheetmusic(tag);
-
-	reply->deleteLater();
 }
 
 void Api::writeSheetmusic(Tag &tag) {
@@ -106,6 +109,7 @@ void Api::syncMetadata() {
 	req.setQuery("n=9999");
 	reply = manager.get(QNetworkRequest(req));
 	connect(reply, &QNetworkReply::readyRead, this, &Api::parseTags);
+	connect(reply, &QNetworkReply::finished, this, &Api::handleTagsFinished);
 	m_isSyncing = true;
 	emit syncingChanged();
 }
@@ -254,12 +258,19 @@ void Api::parseTags() {
 
 		pendingtags.clear();
 	}
-	if (token == QXmlStreamReader::EndDocument && xml.error() == QXmlStreamReader::Error::NoError) {
-		reply->deleteLater();
-		m_isSyncing = false;
-		emit syncingChanged();
+
+	if (token == QXmlStreamReader::EndDocument && xml.error() == QXmlStreamReader::Error::NoError && currentIndex == tagsAvailable) {
 		Settings::get()->setSynced(true);
 	}
+}
+
+void Api::handleTagsFinished() {
+	reply->deleteLater();
+	if (reply->error()) {
+		Backend::get()->notifySnackbar("Error downloading: " + reply->errorString());
+	}
+	m_isSyncing = false;
+	emit syncingChanged();
 }
 
 void Api::initDb() {

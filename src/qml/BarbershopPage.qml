@@ -144,4 +144,8 @@ Item {
 			}
 		}
 	}
+	BusyIndicator {
+		anchors.centerIn: parent
+		visible: Api.downloadActive
+	}
 }
