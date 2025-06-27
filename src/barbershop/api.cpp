@@ -7,12 +7,13 @@
 #include <QStandardPaths>
 
 #include "backend.hpp"
+#include "settings.hpp"
 
 const QUrl endpoint {"http://www.barbershoptags.com/api.php"};
 
 void Api::init() {
 	initDb();
-	if (db.tables().empty()) {
+	if (!Settings::get()->getSynced() || db.tables().empty()) {
 		syncMetadata();
 	}
 }
@@ -257,6 +258,7 @@ void Api::parseTags() {
 		reply->deleteLater();
 		m_isSyncing = false;
 		emit syncingChanged();
+		Settings::get()->setSynced(true);
 	}
 }
 
