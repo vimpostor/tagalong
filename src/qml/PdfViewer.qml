@@ -5,22 +5,35 @@ import QtQuick.Pdf
 import Quartz
 
 Rectangle {
+	id: root
 	property alias source: pdf.source
 	color: "#FFFFFF"
-	Image {
-		id: pdf
+	Flickable {
 		anchors.fill: parent
-		fillMode: Image.PreserveAspectFit
-		cache: false
-		TapHandler {
-			onTapped: (p, b) => {
-				if (p.position.x > pdf.width / 3 * 2) {
-					pdf.currentFrame++;
-				} else if (p.position.x < pdf.width / 3) {
-					pdf.currentFrame--;
-				} else {
-					ic.visible = !ic.visible
+		contentWidth: pdf.width * pdf.scale
+		contentHeight: pdf.height * pdf.scale
+		Image {
+			id: pdf
+			width: root.width
+			height: root.height
+			scale: pinch.persistentScale
+			transformOrigin: Item.TopLeft
+			fillMode: Image.PreserveAspectFit
+			cache: false
+			TapHandler {
+				onTapped: (p, b) => {
+					if (p.position.x > pdf.width / 3 * 2) {
+						pdf.currentFrame++;
+					} else if (p.position.x < pdf.width / 3) {
+						pdf.currentFrame--;
+					} else {
+						ic.visible = !ic.visible
+					}
 				}
+			}
+			PinchHandler {
+				id: pinch
+				target: null
 			}
 		}
 	}
