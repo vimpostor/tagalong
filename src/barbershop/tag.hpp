@@ -27,6 +27,7 @@ class Tag {
 	Q_PROPERTY(QUrl sheetmusic MEMBER sheetmusic CONSTANT)
 	Q_PROPERTY(QUrl sheetMusicAlt MEMBER sheetMusicAlt CONSTANT)
 
+	Q_PROPERTY(bool bookmarked MEMBER bookmarked CONSTANT)
 	Q_PROPERTY(QUrl sheetmusiclocation MEMBER sheetmusiclocation CONSTANT)
 public:
 	TagId id = 0;
@@ -47,6 +48,8 @@ public:
 	QUrl sheetmusic;
 	QUrl sheetMusicAlt;
 
-	QByteArray cachedsheetmusic;
+	bool bookmarked = false;
 	QUrl sheetmusiclocation;
+
+	QByteArray cachedsheetmusic;
 };
