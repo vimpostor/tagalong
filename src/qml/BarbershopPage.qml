@@ -35,7 +35,7 @@ Item {
 		ChipFlow {
 			Layout.fillWidth: true
 			clip: true
-			implicitHeight: contentHeight * search.insearch
+			implicitHeight: contentHeight * search.insearch * 0
 			Behavior on implicitHeight {
 				NumberAnimation { duration: 300; easing.type: Easing.OutCirc; }
 			}
@@ -107,16 +107,61 @@ Item {
 			spacing: 8
 			delegate: Card {
 				width: listview.width
-				height: 50
+				height: 60
 				Column {
-					anchors.fill: parent
+					anchors.left: parent.left
+					anchors.top: parent.top
+					anchors.bottom: parent.bottom
+					anchors.right: bookmark.right
 					anchors.margins: 8
+					spacing: 4
 					Label {
 						text: modelData.title
+						font.pointSize: 12
 					}
-					Label {
-						text: "ID: " + modelData.id
+					Row {
+						spacing: 8
+						height: 24
+						Icon {
+							name: "info"
+						}
+						Label {
+							text: modelData.id
+							verticalAlignment: Text.AlignVCenter
+							height: parent.height
+						}
+						Icon {
+							name: "download"
+						}
+						Label {
+							text: modelData.downloaded
+							verticalAlignment: Text.AlignVCenter
+							height: parent.height
+						}
+						Icon {
+							name: "offline_pin"
+							visible: modelData.visited
+						}
+						Icon {
+							name: "calendar_clock"
+						}
+						Label {
+							text: modelData.posted.toLocaleDateString(Qt.locale(), Locale.ShortFormat)
+							verticalAlignment: Text.AlignVCenter
+							height: parent.height
+						}
 					}
+				}
+				IconButton {
+					id: bookmark
+					anchors.right: parent.right
+					anchors.top: parent.top
+					anchors.bottom: parent.bottom
+					ico.name: "bookmark"
+					ico.filled: checked
+					checkable: true
+					onCheckedChanged: modelData.setBookmarked(checked)
+					Component.onCompleted: checked = modelData.bookmarked
 				}
 				TapHandler {
 					onSingleTapped: {

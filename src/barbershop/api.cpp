@@ -2,8 +2,6 @@
 
 #include <QDir>
 #include <QGuiApplication>
-#include <QSqlError>
-#include <QSqlQuery>
 #include <QStandardPaths>
 
 #include "backend.hpp"
@@ -47,15 +45,7 @@ void Api::handleSheetmusic(QNetworkReply *reply, Tag tag) {
 		Backend::get()->notifySnackbar("Download failed: " + reply->errorString());
 		return;
 	}
-	tag.cachedsheetmusic = reply->readAll();
-	QSqlQuery q;
-	q.prepare("UPDATE tags SET cachedsheetmusic = ? WHERE id = ?");
-	q.bindValue(0, tag.cachedsheetmusic, QSql::ParamTypeFlag::In | QSql::ParamTypeFlag::Binary);
-	q.bindValue(1, tag.id);
-	if (!q.exec()) {
-		qWarning() << "Failed to store sheet music";
-		return;
-	}
+	tag.setCachedSheetMusic(reply->readAll());
 	writeSheetmusic(tag);
 }
 
@@ -90,7 +80,7 @@ std::vector<Tag> Api::complete(QString query) {
 	std::vector<Tag> res;
 	q.exec();
 	while (q.next()) {
-		res.push_back(tagFromQuery(q));
+		res.push_back(Tag(q));
 	}
 	return res;
 }
@@ -114,30 +104,6 @@ void Api::syncMetadata() {
 	emit syncingChanged();
 }
 
-Tag Api::tagFromQuery(QSqlQuery &q) const {
-	Tag res;
-	res.id = q.value(0).toInt();
-	res.title = q.value(1).toString();
-	res.altTitle = q.value(2).toString();
-	res.key = q.value(3).toString();
-	res.parts = q.value(4).toInt();
-	res.notes = q.value(5).toString();
-	res.arranger = q.value(6).toString();
-	res.arranged = q.value(7).toString();
-	res.sungBy = q.value(8).toString();
-	res.quartet = q.value(9).toString();
-	res.posted = QDate::fromJulianDay(q.value(10).toInt());
-	res.collection = q.value(11).toString();
-	res.rating = q.value(12).toFloat();
-	res.ratingCount = q.value(13).toInt();
-	res.downloaded = q.value(14).toInt();
-	res.sheetmusic = q.value(15).toUrl();
-	res.sheetMusicAlt = q.value(16).toUrl();
-	res.bookmarked = q.value(17).toBool();
-	res.cachedsheetmusic = q.value(18).toByteArray();
-	return res;
-}
-
 std::optional<Tag> Api::tagFromId(TagId id) const {
 	QSqlQuery q {"SELECT * FROM tags WHERE id = " + QString::number(id)};
 	q.exec();
@@ -145,7 +111,8 @@ std::optional<Tag> Api::tagFromId(TagId id) const {
 		return std::nullopt;
 	}
 
-	return tagFromQuery(q);
+	Tag res {q};
+	return res;
 }
 
 void Api::parseTags() {

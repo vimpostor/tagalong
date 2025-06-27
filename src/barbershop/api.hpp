@@ -31,7 +31,6 @@ signals:
 	void syncingChanged();
 	void downloadActiveChanged();
 private:
-	Tag tagFromQuery(QSqlQuery &q) const;
 	std::optional<Tag> tagFromId(TagId id) const;
 	void parseTags();
 	void handleTagsFinished();
