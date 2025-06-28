@@ -35,67 +35,20 @@ Item {
 		ChipFlow {
 			Layout.fillWidth: true
 			clip: true
-			implicitHeight: contentHeight * search.insearch * 0
+			implicitHeight: contentHeight * search.insearch
 			Behavior on implicitHeight {
 				NumberAnimation { duration: 300; easing.type: Easing.OutCirc; }
 			}
-			Chip {
-				type: Chip.Type.Filter
-				text: collections.currentIndex + 1 ? collections.currentText : "Collection"
-				leftIco.name: collections.currentIndex + 1 ? "check" : ""
-				rightIco.name: "arrow_drop_down"
-				onClicked: collections.popup.open()
-				onRightIconClicked: collections.popup.open()
-				ComboBox {
-					id: collections
-					property int lastIndex: -1
-					visible: false
-					currentIndex: -1
-					model: ["classic", "easytags", "100"]
-					onActivated: (i) => {
-						if (i == lastIndex) {
-							currentIndex = -1
-							lastIndex = -1
-						} else {
-							lastIndex = currentIndex
-						}
-					}
-				}
+			ComboChip {
+				category: "Collection"
+				model: ["classic", "easytags", "100"]
 			}
-			Chip {
-				type: Chip.Type.Filter
+			CheckChip {
 				text: "Learning Track"
-				checkable: true
-				leftIco.name: checked ? "check" : ""
 			}
-			Chip {
-				type: Chip.Type.Filter
-				text: "Sheet Music"
-				checkable: true
-				leftIco.name: checked ? "check" : ""
-			}
-			Chip {
-				type: Chip.Type.Filter
-				text: sort.currentIndex + 1 ? sort.currentText : "Sort by"
-				leftIco.name: sort.currentIndex + 1 ? "check" : ""
-				rightIco.name: "arrow_drop_down"
-				onClicked: sort.popup.open()
-				onRightIconClicked: sort.popup.open()
-				ComboBox {
-					id: sort
-					property int lastIndex: -1
-					visible: false
-					currentIndex: -1
-					model: ["Title", "Posted", "Rating", "Downloaded"]
-					onActivated: (i) => {
-						if (i == lastIndex) {
-							currentIndex = -1
-							lastIndex = -1
-						} else {
-							lastIndex = currentIndex
-						}
-					}
-				}
+			ComboChip {
+				category: "Sort by"
+				model: ["Title", "Posted", "Rating", "Downloaded", "Visited"]
 			}
 		}
 		ListView {
