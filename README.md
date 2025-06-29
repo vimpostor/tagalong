@@ -14,3 +14,13 @@ Make sure you have a C++26 compiler and the latest Qt with the Declarative, Svg,
 cmake -B build
 cmake --build build
 ```
+
+For the Android build follow the [Qt for Android setup](https://doc.qt.io/qt-6/android.html), then build with:
+
+```bash
+~/Qt/*/android_arm64_v8a/bin/qt-cmake -DANDROID_SDK_ROOT=$HOME/Android/Sdk -DANDROID_NDK_ROOT=$HOME/Android/Sdk/ndk/* -B build -G Ninja
+cmake --build build --target android-integration
+cmake --build build
+```
+
+You can then flash the APK with `adb install /path/to/android-build-debug.apk`.
