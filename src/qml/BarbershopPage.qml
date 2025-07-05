@@ -119,7 +119,6 @@ Item {
 				TapHandler {
 					onSingleTapped: {
 						Api.requestTag(modelData.id);
-						TagCompletionsModel.reset();
 					}
 				}
 			}
