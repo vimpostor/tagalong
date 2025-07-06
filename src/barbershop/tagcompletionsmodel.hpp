@@ -18,6 +18,7 @@ public:
 	Q_INVOKABLE void reset();
 	Q_INVOKABLE void setCollection(QString c);
 	Q_INVOKABLE void setLearningTrack(bool l);
+	Q_INVOKABLE void setBookmarked(bool b);
 	Q_INVOKABLE void setSorting(QString s);
 	Q_INVOKABLE void setDescending(bool s);
 private:
@@ -25,6 +26,7 @@ private:
 	QString query;
 	QString collection;
 	bool needsLearningTrack = false;
+	bool needsBookmarked = false;
 	QString sorting;
 	bool descending = false;
 

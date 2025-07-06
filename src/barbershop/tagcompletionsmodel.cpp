@@ -37,6 +37,11 @@ void TagCompletionsModel::setLearningTrack(bool l) {
 	complete(query);
 }
 
+void TagCompletionsModel::setBookmarked(bool b) {
+	needsBookmarked = b;
+	complete(query);
+}
+
 void TagCompletionsModel::setSorting(QString s) {
 	sorting = s;
 	complete(query);
@@ -55,6 +60,9 @@ void TagCompletionsModel::filter(std::vector<Tag> &candidates) {
 	if (needsLearningTrack) {
 		// TODO: Add support for learning tracks
 		predicates.push_back([&](auto &t) { return false; });
+	}
+	if (needsBookmarked) {
+		predicates.push_back([&](auto &t) { return t.bookmarked; });
 	}
 
 	tags = tags | std::views::filter([&](const auto &t) { return std::ranges::all_of(predicates, [&](auto &p) { return p(t); }); }) | std::ranges::to<std::vector>();

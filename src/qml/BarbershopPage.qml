@@ -48,6 +48,10 @@ Item {
 				text: "Learning Track"
 				onCheckedChanged: TagCompletionsModel.setLearningTrack(checked);
 			}
+			CheckChip {
+				text: "Bookmarked"
+				onCheckedChanged: TagCompletionsModel.setBookmarked(checked);
+			}
 			ComboChip {
 				category: "Sort by"
 				model: ["Title", "Posted", "Rating", "Downloaded", "Visited"]
