@@ -19,7 +19,13 @@ Tag::Tag(QSqlQuery &q) {
 	sheetmusic = q.value(15).toUrl();
 	sheetMusicAlt = q.value(16).toUrl();
 	bookmarked = q.value(17).toBool();
-	cachedsheetmusic = q.value(18).toByteArray();
+
+	const auto val = q.value(18).toInt();
+	if (val) {
+		visited = QDateTime::fromSecsSinceEpoch(val);
+	}
+
+	cachedsheetmusic = q.value(19).toByteArray();
 }
 
 void Tag::setBookmarked(bool b) {
@@ -33,16 +39,20 @@ void Tag::setBookmarked(bool b) {
 	updateSqliteById(q);
 }
 
+void Tag::setVisited() {
+	visited = QDateTime::currentDateTime();
+	QSqlQuery q;
+	q.prepare("UPDATE tags SET visited = ? WHERE id = ?");
+	q.bindValue(0, static_cast<int>(visited.toSecsSinceEpoch()), QSql::ParamTypeFlag::In);
+	updateSqliteById(q);
+}
+
 void Tag::setCachedSheetMusic(const QByteArray &b) {
 	cachedsheetmusic = b;
 	QSqlQuery q;
 	q.prepare("UPDATE tags SET cachedsheetmusic = ? WHERE id = ?");
 	q.bindValue(0, cachedsheetmusic, QSql::ParamTypeFlag::In | QSql::ParamTypeFlag::Binary);
 	updateSqliteById(q);
-}
-
-bool Tag::isVisited() const {
-	return !cachedsheetmusic.isNull();
 }
 
 void Tag::updateSqliteById(QSqlQuery &q) {

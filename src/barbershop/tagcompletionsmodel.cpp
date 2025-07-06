@@ -64,12 +64,12 @@ void TagCompletionsModel::sort(std::vector<Tag> &t) {
 	if (sorting.isEmpty()) {
 		return;
 	}
-	std::unordered_map<QString, std::function<bool(const Tag &, const Tag &)>> predicates {
-		{"Title", [](const auto &a, const auto &b) { return a.title < b.title; }},
-		{"Posted", [](const auto &a, const auto &b) { return a.posted < b.posted; }},
-		{"Rating", [](const auto &a, const auto &b) { return a.rating < b.rating; }},
-		{"Downloaded", [](const auto &a, const auto &b) { return a.downloaded < b.downloaded; }},
-		{"Visited", [](const auto &a, const auto &b) { return a.isVisited() && !b.isVisited(); }},
+	std::unordered_map<QString, std::function<std::partial_ordering(const Tag &, const Tag &)>> predicates {
+		{"Title", [](const auto &a, const auto &b) { return a.title <=> b.title; }},
+		{"Posted", [](const auto &a, const auto &b) { return a.posted <=> b.posted; }},
+		{"Rating", [](const auto &a, const auto &b) { return a.rating <=> b.rating; }},
+		{"Downloaded", [](const auto &a, const auto &b) { return a.downloaded <=> b.downloaded; }},
+		{"Visited", [](const auto &a, const auto &b) { return a.visited <=> b.visited; }},
 	};
-	std::ranges::sort(t, [&](const auto &a, const auto &b) { return descending ^ predicates[sorting](a, b) && !(descending && predicates[sorting](b, a)); });
+	std::ranges::sort(t, [&](const auto &a, const auto &b) { return predicates[sorting](a, b) == (descending ? std::partial_ordering::greater : std::partial_ordering::less); });
 }

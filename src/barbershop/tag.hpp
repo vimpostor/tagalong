@@ -30,8 +30,9 @@ class Tag {
 	Q_PROPERTY(QUrl sheetMusicAlt MEMBER sheetMusicAlt CONSTANT)
 
 	Q_PROPERTY(bool bookmarked MEMBER bookmarked CONSTANT)
+	Q_PROPERTY(QDateTime visited MEMBER visited CONSTANT)
+
 	Q_PROPERTY(QUrl sheetmusiclocation MEMBER sheetmusiclocation CONSTANT)
-	Q_PROPERTY(bool visited READ isVisited CONSTANT)
 public:
 	Tag() {};
 	explicit Tag(QSqlQuery &q);
@@ -55,14 +56,15 @@ public:
 	QUrl sheetMusicAlt;
 
 	bool bookmarked = false;
+	QDateTime visited;
+
 	QUrl sheetmusiclocation;
 
 	QByteArray cachedsheetmusic;
 
 	Q_INVOKABLE void setBookmarked(bool b);
+	void setVisited();
 	void setCachedSheetMusic(const QByteArray &b);
-
-	bool isVisited() const;
 private:
 	void updateSqliteById(QSqlQuery &q);
 };

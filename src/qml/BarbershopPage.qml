@@ -100,7 +100,7 @@ Item {
 						}
 						Icon {
 							name: "offline_pin"
-							visible: modelData.visited
+							visible: modelData.visited.valueOf()
 						}
 						Icon {
 							name: "calendar_clock"

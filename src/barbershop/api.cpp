@@ -23,6 +23,7 @@ void Api::requestTag(TagId id) {
 		return;
 	}
 
+	res->setVisited();
 	if (res->cachedsheetmusic.isEmpty()) {
 		downloadSheetmusic(*res);
 	} else {
@@ -87,7 +88,7 @@ std::vector<Tag> Api::complete(QString query) {
 
 void Api::syncMetadata() {
 	QSqlQuery q;
-	q.exec("CREATE TABLE tags(id INT PRIMARY KEY NOT NULL, title TEXT, alttitle TEXT, key TEXT, parts INT, notes TEXT, arranger TEXT, arranged TEXT, sungby TEXT, quartet TEXT, posted INT, collection TEXT, rating REAL, ratingcount INT, downloaded INT, sheetmusic TEXT, sheetmusicalt TEXT, bookmarked INT, cachedsheetmusic BLOB DEFAULT NULL)");
+	q.exec("CREATE TABLE tags(id INT PRIMARY KEY NOT NULL, title TEXT, alttitle TEXT, key TEXT, parts INT, notes TEXT, arranger TEXT, arranged TEXT, sungby TEXT, quartet TEXT, posted INT, collection TEXT, rating REAL, ratingcount INT, downloaded INT, sheetmusic TEXT, sheetmusicalt TEXT, bookmarked INT, visited INT, cachedsheetmusic BLOB DEFAULT NULL)");
 	xml.clear();
 	pendingtags.clear();
 	invideo = false;
@@ -194,7 +195,7 @@ void Api::parseTags() {
 
 	if (pendingtags.size()) {
 		// insert tags
-		auto params = QString(" (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, NULL),").repeated(pendingtags.size());
+		auto params = QString(" (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, NULL),").repeated(pendingtags.size());
 		params.removeLast(); // remove trailing comma
 		QSqlQuery q;
 		q.prepare("INSERT INTO tags VALUES" + params);
