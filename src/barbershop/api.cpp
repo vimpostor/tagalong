@@ -61,7 +61,7 @@ void Api::writeSheetmusic(Tag &tag) {
 }
 
 std::vector<Tag> Api::complete(QString query) {
-	if (!db.open() || query.isEmpty()) {
+	if (!db.open()) {
 		return {};
 	}
 	bool ok;

@@ -42,13 +42,16 @@ Item {
 			ComboChip {
 				category: "Collection"
 				model: ["classic", "easytags", "100"]
+				onSelectedTextChanged: TagCompletionsModel.setCollection(selectedText);
 			}
 			CheckChip {
 				text: "Learning Track"
+				onCheckedChanged: TagCompletionsModel.setLearningTrack(checked);
 			}
 			ComboChip {
 				category: "Sort by"
 				model: ["Title", "Posted", "Rating", "Downloaded", "Visited"]
+				onSelectedTextChanged: TagCompletionsModel.setSorting(selectedText);
 			}
 		}
 		ListView {
