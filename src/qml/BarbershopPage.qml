@@ -53,6 +53,10 @@ Item {
 				model: ["Title", "Posted", "Rating", "Downloaded", "Visited"]
 				onSelectedTextChanged: TagCompletionsModel.setSorting(selectedText);
 			}
+			CheckChip {
+				text: "Descending"
+				onCheckedChanged: TagCompletionsModel.setDescending(checked)
+			}
 		}
 		ListView {
 			id: listview

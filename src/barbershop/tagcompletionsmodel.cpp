@@ -42,6 +42,11 @@ void TagCompletionsModel::setSorting(QString s) {
 	complete(query);
 }
 
+void TagCompletionsModel::setDescending(bool s) {
+	descending = s;
+	complete(query);
+}
+
 void TagCompletionsModel::filter(std::vector<Tag> &candidates) {
 	std::vector<std::function<bool(const Tag &)>> predicates;
 	if (!collection.isEmpty()) {
@@ -62,9 +67,9 @@ void TagCompletionsModel::sort(std::vector<Tag> &t) {
 	std::unordered_map<QString, std::function<bool(const Tag &, const Tag &)>> predicates {
 		{"Title", [](const auto &a, const auto &b) { return a.title < b.title; }},
 		{"Posted", [](const auto &a, const auto &b) { return a.posted < b.posted; }},
-		{"Rating", [](const auto &a, const auto &b) { return a.rating < b.rating || (a.rating == b.rating && a.ratingCount < b.ratingCount); }},
+		{"Rating", [](const auto &a, const auto &b) { return a.rating < b.rating; }},
 		{"Downloaded", [](const auto &a, const auto &b) { return a.downloaded < b.downloaded; }},
 		{"Visited", [](const auto &a, const auto &b) { return a.isVisited() && !b.isVisited(); }},
 	};
-	std::ranges::sort(t, predicates[sorting]);
+	std::ranges::sort(t, [&](const auto &a, const auto &b) { return descending ^ predicates[sorting](a, b) && !(descending && predicates[sorting](b, a)); });
 }

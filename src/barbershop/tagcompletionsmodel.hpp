@@ -19,12 +19,14 @@ public:
 	Q_INVOKABLE void setCollection(QString c);
 	Q_INVOKABLE void setLearningTrack(bool l);
 	Q_INVOKABLE void setSorting(QString s);
+	Q_INVOKABLE void setDescending(bool s);
 private:
 	std::vector<Tag> tags;
 	QString query;
 	QString collection;
 	bool needsLearningTrack = false;
 	QString sorting;
+	bool descending = false;
 
 	void filter(std::vector<Tag> &candidates);
 	void sort(std::vector<Tag> &t);
