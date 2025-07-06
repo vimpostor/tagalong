@@ -73,11 +73,19 @@ void TagCompletionsModel::sort(std::vector<Tag> &t) {
 		return;
 	}
 	std::unordered_map<QString, std::function<std::partial_ordering(const Tag &, const Tag &)>> predicates {
+#ifdef Q_OS_ANDROID
+		{"Title", [](const auto &a, const auto &b) { return a.title.toStdString() <=> b.title.toStdString(); }},
+		{"Posted", [](const auto &a, const auto &b) { return a.posted.toJulianDay() <=> b.posted.toJulianDay(); }},
+		{"Rating", [](const auto &a, const auto &b) { return a.rating <=> b.rating; }},
+		{"Downloaded", [](const auto &a, const auto &b) { return a.downloaded <=> b.downloaded; }},
+		{"Visited", [](const auto &a, const auto &b) { return (a.visited.isValid() ? a.visited.toSecsSinceEpoch() : 0) <=> (b.visited.isValid() ? b.visited.toSecsSinceEpoch() : 0); }},
+#else
 		{"Title", [](const auto &a, const auto &b) { return a.title <=> b.title; }},
 		{"Posted", [](const auto &a, const auto &b) { return a.posted <=> b.posted; }},
 		{"Rating", [](const auto &a, const auto &b) { return a.rating <=> b.rating; }},
 		{"Downloaded", [](const auto &a, const auto &b) { return a.downloaded <=> b.downloaded; }},
 		{"Visited", [](const auto &a, const auto &b) { return a.visited <=> b.visited; }},
+#endif
 	};
 	std::ranges::sort(t, [&](const auto &a, const auto &b) { return predicates[sorting](a, b) == (descending ? std::partial_ordering::greater : std::partial_ordering::less); });
 }
