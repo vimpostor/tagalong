@@ -37,6 +37,8 @@ void Tag::setBookmarked(bool b) {
 	q.prepare("UPDATE tags SET bookmarked = ? WHERE id = ?");
 	q.bindValue(0, static_cast<int>(b), QSql::ParamTypeFlag::In);
 	updateSqliteById(q);
+
+	setVisited();
 }
 
 void Tag::setVisited() {
