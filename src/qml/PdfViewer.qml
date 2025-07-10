@@ -9,6 +9,7 @@ Rectangle {
 	property alias source: pdf.source
 	color: "#FFFFFF"
 	Flickable {
+		id: flickable
 		anchors.fill: parent
 		contentWidth: pdf.width * pdf.scale
 		contentHeight: pdf.height * pdf.scale
@@ -20,6 +21,8 @@ Rectangle {
 			transformOrigin: Item.TopLeft
 			fillMode: Image.PreserveAspectFit
 			cache: false
+			sourceSize.width: flickable.contentWidth
+			sourceSize.height: flickable.contentHeight
 			TapHandler {
 				onTapped: (p, b) => {
 					if (p.position.x > pdf.width / 3 * 2) {
