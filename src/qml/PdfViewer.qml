@@ -38,6 +38,10 @@ Rectangle {
 				id: pinch
 				target: null
 			}
+			WheelHandler {
+				acceptedModifiers: Qt.ControlModifier
+				onWheel: e => pinch.persistentScale *= 1.2 ** (e.angleDelta.y / 120)
+			}
 		}
 	}
 	IconButton {
