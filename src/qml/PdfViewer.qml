@@ -23,25 +23,25 @@ Rectangle {
 			cache: false
 			sourceSize.width: flickable.contentWidth
 			sourceSize.height: flickable.contentHeight
-			TapHandler {
-				onTapped: (p, b) => {
-					if (p.position.x > pdf.width / 3 * 2) {
-						pdf.currentFrame++;
-					} else if (p.position.x < pdf.width / 3) {
-						pdf.currentFrame--;
-					} else {
-						ic.visible = !ic.visible
-					}
+		}
+		TapHandler {
+			onTapped: (p, b) => {
+				if (p.position.x > pdf.width / 3 * 2) {
+					pdf.currentFrame++;
+				} else if (p.position.x < pdf.width / 3) {
+					pdf.currentFrame--;
+				} else {
+					ic.visible = !ic.visible
 				}
 			}
-			PinchHandler {
-				id: pinch
-				target: null
-			}
-			WheelHandler {
-				acceptedModifiers: Qt.ControlModifier
-				onWheel: e => pinch.persistentScale *= 1.2 ** (e.angleDelta.y / 120)
-			}
+		}
+		PinchHandler {
+			id: pinch
+			target: null
+		}
+		WheelHandler {
+			acceptedModifiers: Qt.ControlModifier
+			onWheel: e => pinch.persistentScale *= 1.2 ** (e.angleDelta.y / 120)
 		}
 	}
 	IconButton {
