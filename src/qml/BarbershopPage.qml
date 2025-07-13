@@ -84,15 +84,18 @@ Item {
 						font.pointSize: 12
 					}
 					Row {
-						spacing: 8
+						spacing: 2
 						height: 24
 						Icon {
-							name: "info"
+							name: "numbers"
 						}
 						Label {
 							text: modelData.id
 							verticalAlignment: Text.AlignVCenter
 							height: parent.height
+						}
+						Spacer {
+							width: 20
 						}
 						Icon {
 							name: "download"
@@ -102,9 +105,8 @@ Item {
 							verticalAlignment: Text.AlignVCenter
 							height: parent.height
 						}
-						Icon {
-							name: "offline_pin"
-							visible: modelData.visited.valueOf()
+						Spacer {
+							width: 20
 						}
 						Icon {
 							name: "calendar_clock"
@@ -113,6 +115,13 @@ Item {
 							text: modelData.posted.toLocaleDateString(Qt.locale(), Locale.ShortFormat)
 							verticalAlignment: Text.AlignVCenter
 							height: parent.height
+						}
+						Spacer {
+							width: 20
+						}
+						Icon {
+							name: "offline_pin"
+							visible: modelData.visited.valueOf()
 						}
 					}
 				}
