@@ -19,7 +19,7 @@ For the Android build follow the [Qt for Android setup](https://doc.qt.io/qt-6/a
 
 ```bash
 ~/Qt/*/android_arm64_v8a/bin/qt-cmake -DANDROID_SDK_ROOT=$HOME/Android/Sdk -DANDROID_NDK_ROOT=$HOME/Android/Sdk/ndk/* -B build -G Ninja
-cmake --build build --target android-integration
+cmake --build build --target icon-integration
 cmake --build build
 ```
 

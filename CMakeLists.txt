@@ -13,7 +13,7 @@ list(TRANSFORM QT_MODULES PREPEND "Qt6::")
 list(APPEND LINK_LIBS ${QT_MODULES})
 
 include(FetchContent)
-FetchContent_Declare(quartz GIT_REPOSITORY https://github.com/vimpostor/quartz.git GIT_TAG 706a2ad8e8f74ff9cb37da0789902c3258c7603c)
+FetchContent_Declare(quartz GIT_REPOSITORY https://github.com/vimpostor/quartz.git GIT_TAG e912ced5880d959231e25b3aaf4c2079c0ae560d)
 FetchContent_MakeAvailable(quartz)
 
 include_directories("src" "src/barbershop")
@@ -35,12 +35,10 @@ target_link_libraries(${PROJECT_NAME} PRIVATE ${LINK_LIBS})
 quartz_link(${PROJECT_NAME})
 
 # install
+quartz_generate_launcher_icons(${PROJECT_NAME})
 if(ANDROID)
 	# openssl
 	quartz_bundle_android_openssl(${PROJECT_NAME})
-
-	# generate icons
-	quartz_generate_android_icons(${PROJECT_NAME})
 
 	string(REPLACE "." "" VERSION_CODE "${PROJECT_VERSION}")
 	set_target_properties(${PROJECT_NAME} PROPERTIES QT_ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_SOURCE_DIR}/android" QT_ANDROID_PACKAGE_NAME "com.mggross.${PROJECT_NAME}" QT_ANDROID_APP_ICON "@drawable/${PROJECT_NAME}" QT_ANDROID_APP_NAME "Tag Along" QT_ANDROID_VERSION_NAME "${PROJECT_VERSION}" QT_ANDROID_VERSION_CODE ${VERSION_CODE})
