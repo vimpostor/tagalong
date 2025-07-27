@@ -1,0 +1,9 @@
+#!/usr/bin/env xdg-open
+[Desktop Entry]
+Type=Application
+Name=Tagalong
+Comment=A sheet music viewer with special integration for Barbershop tags
+Exec=tagalong
+Terminal=false
+Categories=Graphics;Viewer;
+Icon=tagalong
