@@ -13,6 +13,7 @@ Make sure you have a C++26 compiler and the latest Qt with the Declarative, Svg,
 ```bash
 cmake -B build
 cmake --build build
+cmake --build build --target icon-integration
 ```
 
 For the Android build follow the [Qt for Android setup](https://doc.qt.io/qt-6/android.html), then build with:
