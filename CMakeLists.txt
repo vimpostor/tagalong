@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 4.0)
-project(tagalong VERSION 1.0 DESCRIPTION "Sheet music viewer")
+project(tagalong VERSION 1.0 DESCRIPTION "A sheet music viewer with special integration for Barbershop tags")
 
 set(CMAKE_CXX_STANDARD 26)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -13,7 +13,7 @@ list(TRANSFORM QT_MODULES PREPEND "Qt6::")
 list(APPEND LINK_LIBS ${QT_MODULES})
 
 include(FetchContent)
-FetchContent_Declare(quartz GIT_REPOSITORY https://github.com/vimpostor/quartz.git GIT_TAG e912ced5880d959231e25b3aaf4c2079c0ae560d)
+FetchContent_Declare(quartz GIT_REPOSITORY https://github.com/vimpostor/quartz.git GIT_TAG 75683f6e7c5077d89801201da63f72c4aebb2043)
 FetchContent_MakeAvailable(quartz)
 
 include_directories("src" "src/barbershop")
@@ -44,5 +44,6 @@ if(ANDROID)
 	set_target_properties(${PROJECT_NAME} PROPERTIES QT_ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_SOURCE_DIR}/android" QT_ANDROID_PACKAGE_NAME "com.mggross.${PROJECT_NAME}" QT_ANDROID_APP_ICON "@drawable/${PROJECT_NAME}" QT_ANDROID_APP_NAME "Tag Along" QT_ANDROID_VERSION_NAME "${PROJECT_VERSION}" QT_ANDROID_VERSION_CODE ${VERSION_CODE})
 else()
 	install(TARGETS ${PROJECT_NAME} RUNTIME)
+	quartz_generate_desktop_file(${PROJECT_NAME} "Graphics;Viewer;")
 	install(FILES "assets/${PROJECT_NAME}.desktop" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/applications")
 endif()
