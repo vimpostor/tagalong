@@ -87,10 +87,10 @@ Item {
 						spacing: 2
 						height: 24
 						Icon {
-							name: "numbers"
+							name: "download"
 						}
 						Label {
-							text: modelData.id
+							text: modelData.downloaded
 							verticalAlignment: Text.AlignVCenter
 							height: parent.height
 						}
@@ -98,10 +98,10 @@ Item {
 							width: 20
 						}
 						Icon {
-							name: "download"
+							name: "numbers"
 						}
 						Label {
-							text: modelData.downloaded
+							text: modelData.id
 							verticalAlignment: Text.AlignVCenter
 							height: parent.height
 						}
