@@ -26,9 +26,9 @@ Rectangle {
 		}
 		TapHandler {
 			onTapped: (p, b) => {
-				if (p.position.x > pdf.width / 3 * 2) {
+				if (p.position.x > pdf.width / 3 * 2 && pdf.currentFrame < pdf.frameCount - 1) {
 					pdf.currentFrame++;
-				} else if (p.position.x < pdf.width / 3) {
+				} else if (p.position.x < pdf.width / 3 && pdf.currentFrame > 0) {
 					pdf.currentFrame--;
 				} else {
 					ic.visible = !ic.visible
