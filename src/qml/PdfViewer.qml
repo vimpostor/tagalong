@@ -8,6 +8,11 @@ Rectangle {
 	id: root
 	property alias source: pdf.source
 	color: "#FFFFFF"
+	focus: true
+	Keys.onBackPressed: ev => {
+		Backend.documentType = "";
+		ev.accepted = true;
+	}
 	Flickable {
 		id: flickable
 		anchors.fill: parent
