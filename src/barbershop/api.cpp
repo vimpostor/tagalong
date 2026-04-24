@@ -52,7 +52,10 @@ void Api::handleSheetmusic(QNetworkReply *reply, Tag tag) {
 
 void Api::writeSheetmusic(Tag &tag) {
 	QFile f {QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + "/blob"};
-	f.open(QFile::OpenModeFlag::WriteOnly);
+	if (!f.open(QFile::OpenModeFlag::WriteOnly)) {
+		return;
+	}
+
 	f.write(tag.cachedsheetmusic);
 	f.close();
 	tag.sheetmusiclocation = QUrl::fromLocalFile(f.fileName());
