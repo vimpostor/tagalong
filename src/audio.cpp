@@ -11,6 +11,29 @@ qint64 AudioBuffer::readData(char *data, qint64 maxSize) {
 		*d = std::sin(2 * std::numbers::pi * frequency * currentSample / samplerate);
 		++d;
 	}
+
+	/**
+	 * Avoid integer overflow.
+	 * Unfortunately using modulo is only sufficient for integer frequencies.
+	 * For floating point frequencies in general we have to derive a slightly more complicated formula.
+	 * However this should still be faster than arcsin.
+	 *
+	 * Using the sin equality sin(x) = sin(x + i * 2 * pi) for any integer i, we can adjust the new sample index.
+	 * Let f be the tone frequency with integer part fi and decimal part fd, s the samplerate, i the current sample index,
+	 * j = i % samplerate the downshifted sample index, tau = 2 * pi, then we can prove the following:
+	 *
+	 * sin(tau * f * i/s)
+	 * = sin(tau * fi * i/s + tau * fd * i/s)
+	 * = sin(tau * fi * j/s + tau * fd * i/s)
+	 * = sin(tau * f * fi/f * j/s + tau * f * fd/f * i/s)
+	 * = sin(tau * f * ((fi/f * j + fd/f * i) / s))
+	 *
+	 * Thus we can compute the new downshifted index for arbitrary frequencies as the numerator of the above fraction.
+	*/
+	float iptr;
+	float dec = std::modf(frequency, &iptr);
+	currentSample = iptr / frequency * (currentSample % samplerate) + dec / frequency * currentSample;
+
 	return maxSize ? maxSize : defaultSize * sizeof(float);
 }
 
