@@ -20,7 +20,7 @@ protected:
 private:
 	uint32_t currentSample = 0;
 	static const constexpr qint64 defaultSize = 256;
-	static const constexpr qint64 fadeSamples = defaultSize;
+	static const constexpr qint64 fadeSamples = defaultSize / 8;
 };
 
 class Audio : public QObject {
