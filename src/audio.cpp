@@ -72,6 +72,14 @@ void Audio::play(int note) {
 	buf.currentFadeSample = 0;
 }
 
+void Audio::stop() {
+	if (!ok) {
+		return;
+	}
+	sink->stop();
+	ok = false;
+}
+
 void Audio::init() {
 	if (ok) {
 		return;

@@ -4,6 +4,7 @@
 #include <QQmlContext>
 #include <QQuickStyle>
 
+#include "audio.hpp"
 #include "backend.hpp"
 
 #include <qglobal.h>
@@ -40,5 +41,7 @@ int main(int argc, char *argv[]) {
 		return EXIT_FAILURE;
 	}
 
-	return app.exec();
+	const auto res = app.exec();
+	Audio::get()->stop();
+	return res;
 }

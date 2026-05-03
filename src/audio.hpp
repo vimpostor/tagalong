@@ -31,6 +31,7 @@ public:
 	QML_CPP_SINGLETON(Audio)
 
 	Q_INVOKABLE void play(int note);
+	void stop();
 private:
 	void init();
 
