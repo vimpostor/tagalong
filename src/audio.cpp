@@ -8,7 +8,14 @@ qint64 AudioBuffer::readData(char *data, qint64 maxSize) {
 	const auto n = currentSample + (maxSize ? maxSize / sizeof(float) : defaultSize);
 	auto d = reinterpret_cast<float *>(data);
 	for (; currentSample < n; ++currentSample) {
-		*d = std::sin(2 * std::numbers::pi * frequency * currentSample / samplerate);
+		float volume = static_cast<float>(currentFadeSample) / fadeSamples;
+		if (stop) {
+			volume = 1 - volume;
+		}
+		if (currentFadeSample < fadeSamples - 1) {
+			currentFadeSample++;
+		}
+		*d = volume * std::sin(2 * std::numbers::pi * frequency * currentSample / samplerate);
 		++d;
 	}
 
@@ -48,11 +55,13 @@ qint64 AudioBuffer::bytesAvailable() const {
 void Audio::play(int note) {
 	init();
 	if (note < 0) {
-		sink->stop();
+		buf.stop = true;
+		buf.currentFadeSample = 0;
 		return;
 	}
 	buf.frequency = 440 * std::pow(2, (note - 9) / 12.0);
-	sink->start(&buf);
+	buf.stop = false;
+	buf.currentFadeSample = 0;
 }
 
 void Audio::init() {
@@ -64,6 +73,7 @@ void Audio::init() {
 	fmt.setChannelCount(1);
 	fmt.setSampleRate(buf.samplerate);
 	fmt.setSampleFormat(QAudioFormat::SampleFormat::Float);
-	sink = std::make_unique<QAudioSink>(fmt);
+	sink = new QAudioSink(fmt);
+	sink->start(&buf);
 	ok = true;
 }

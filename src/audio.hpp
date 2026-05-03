@@ -11,13 +11,16 @@ public:
 
 	uint32_t samplerate = 48000;
 	float frequency = 440;
+	bool stop = true;
+	uint32_t currentFadeSample = 0;
 protected:
 	qint64 readData(char *data, qint64 maxSize) override;
 	qint64 writeData(const char *data, qint64 maxSize) override;
 	qint64 bytesAvailable() const override;
 private:
 	uint32_t currentSample = 0;
-	static const constexpr qint64 defaultSize = 4096;
+	static const constexpr qint64 defaultSize = 256;
+	static const constexpr qint64 fadeSamples = defaultSize;
 };
 
 class Audio : public QObject {
@@ -31,7 +34,7 @@ public:
 private:
 	void init();
 
-	std::unique_ptr<QAudioSink> sink;
+	QAudioSink *sink = nullptr;
 	AudioBuffer buf;
 	bool ok = false;
 };
