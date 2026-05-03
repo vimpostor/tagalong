@@ -20,7 +20,7 @@ qint64 AudioBuffer::readData(char *data, qint64 maxSize) {
 		for (int overtone = 1; overtone <= 8; ++overtone) {
 			const constexpr float dampeningConstant = 0.2;
 			const float dampening = 1.f - (static_cast<float>(overtone - 1) / static_cast<float>(overtones - 1) * (1.f - dampeningConstant));
-			tone += dampening * std::sin(2 * std::numbers::pi * overtone * frequency * currentSample / samplerate);
+			tone += dampening * std::sin(2 * M_PI * overtone * frequency * currentSample / samplerate);
 		}
 		tone /= overtones - 1;
 		*d = volume * tone;

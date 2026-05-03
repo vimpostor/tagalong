@@ -13,11 +13,15 @@ static void setDocument(JNIEnv *env, jobject, jstring doc) {
 
 	// for some reason the QML PDF viewer does not support content URIs
 	QFile f {url};
-	f.open(QFile::ReadOnly);
+	if (!f.open(QFile::ReadOnly)) {
+		return;
+	}
 	const auto data = f.readAll();
 	f.close();
 	f.setFileName(QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + "/blob");
-	f.open(QFile::WriteOnly);
+	if (!f.open(QFile::WriteOnly)) {
+		return;
+	}
 	f.write(data);
 	f.close();
 
