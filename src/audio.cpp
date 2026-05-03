@@ -15,7 +15,15 @@ qint64 AudioBuffer::readData(char *data, qint64 maxSize) {
 		if (currentFadeSample < fadeSamples - 1) {
 			currentFadeSample++;
 		}
-		*d = volume * std::sin(2 * std::numbers::pi * frequency * currentSample / samplerate);
+		float tone = 0;
+		const constexpr int overtones = 8;
+		for (int overtone = 1; overtone <= 8; ++overtone) {
+			const constexpr float dampeningConstant = 0.2;
+			const float dampening = 1.f - (static_cast<float>(overtone - 1) / static_cast<float>(overtones - 1) * (1.f - dampeningConstant));
+			tone += dampening * std::sin(2 * std::numbers::pi * overtone * frequency * currentSample / samplerate);
+		}
+		tone /= overtones - 1;
+		*d = volume * tone;
 		++d;
 	}
 
@@ -73,7 +81,7 @@ void Audio::init() {
 	fmt.setChannelCount(1);
 	fmt.setSampleRate(buf.samplerate);
 	fmt.setSampleFormat(QAudioFormat::SampleFormat::Float);
-	sink = new QAudioSink(fmt);
+	sink = new QAudioSink(fmt, this);
 	sink->start(&buf);
 	ok = true;
 }
