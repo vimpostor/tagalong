@@ -8,7 +8,7 @@ qint64 AudioBuffer::readData(char *data, qint64 maxSize) {
 	const auto n = currentSample + (maxSize ? maxSize / sizeof(float) : defaultSize);
 	auto d = reinterpret_cast<float *>(data);
 	for (; currentSample < n; ++currentSample) {
-		float volume = static_cast<float>(currentFadeSample) / fadeSamples;
+		float volume = static_cast<float>(currentFadeSample) / (fadeSamples - 1);
 		if (stop) {
 			volume = 1 - volume;
 		}
