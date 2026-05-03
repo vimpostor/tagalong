@@ -7,3 +7,11 @@ bool Settings::getSynced() const {
 void Settings::setSynced(bool synced) {
 	settings.setValue("synced", synced);
 }
+
+int Settings::getCurrentTab() const {
+	return settings.value("currentTab", 0).toInt();
+}
+
+void Settings::setCurrentTab(int i) {
+	settings.setValue("currentTab", i);
+}

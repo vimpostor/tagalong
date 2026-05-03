@@ -7,11 +7,15 @@ class Settings : public QObject {
 	Q_OBJECT
 	QML_ELEMENT
 	QML_SINGLETON
+
 public:
 	QML_CPP_SINGLETON(Settings)
 
 	bool getSynced() const;
 	void setSynced(bool synced);
+
+	Q_INVOKABLE int getCurrentTab() const;
+	Q_INVOKABLE void setCurrentTab(int i);
 private:
 	QSettings settings;
 };

@@ -81,7 +81,7 @@ void Audio::init() {
 	fmt.setChannelCount(1);
 	fmt.setSampleRate(buf.samplerate);
 	fmt.setSampleFormat(QAudioFormat::SampleFormat::Float);
-	sink = new QAudioSink(fmt, this);
+	sink = std::make_unique<QAudioSink>(fmt);
 	sink->start(&buf);
 	ok = true;
 }

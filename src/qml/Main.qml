@@ -13,7 +13,9 @@ AppWindow {
 	Material.primary: Material.Indigo
 	Material.accent: Material.Pink
 	NavigationDrawerPage {
-		model: ["Barbershop", "Piano"]
+		navIndex: Settings.getCurrentTab()
+		model: ["Barbershop", "Piano", "Settings"]
+		onCurrentIndexChanged: Settings.setCurrentTab(currentIndex);
 		Item {
 			BarbershopPage {
 				anchors.fill: parent
@@ -31,6 +33,12 @@ AppWindow {
 		Item {
 			Piano {
 				anchors.fill: parent
+			}
+		}
+		Item {
+			Label {
+				anchors.centerIn: parent
+				text: "Nothing here yet"
 			}
 		}
 	}

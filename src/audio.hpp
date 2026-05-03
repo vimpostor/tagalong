@@ -34,7 +34,7 @@ public:
 private:
 	void init();
 
-	QAudioSink *sink = nullptr;
+	std::unique_ptr<QAudioSink> sink;
 	AudioBuffer buf;
 	bool ok = false;
 };
