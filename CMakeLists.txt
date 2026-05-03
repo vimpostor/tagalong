@@ -5,15 +5,15 @@ set(CMAKE_CXX_STANDARD 26)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-list(APPEND QT_MODULES Core Qml Quick QuickControls2 Svg Pdf Network Sql)
-find_package(Qt6 6.9 COMPONENTS ${QT_MODULES} REQUIRED)
+list(APPEND QT_MODULES Core Qml Quick QuickControls2 Svg Pdf Multimedia Network Sql)
+find_package(Qt6 6.11 COMPONENTS ${QT_MODULES} REQUIRED)
 qt_standard_project_setup(REQUIRES ${Qt6_VERSION})
 list(TRANSFORM QT_MODULES PREPEND "Qt6::")
 
 list(APPEND LINK_LIBS ${QT_MODULES})
 
 include(FetchContent)
-FetchContent_Declare(quartz GIT_REPOSITORY https://github.com/vimpostor/quartz.git GIT_TAG 3de395240b4055ad42581466958707d60b373ab4)
+FetchContent_Declare(quartz GIT_REPOSITORY https://github.com/vimpostor/quartz.git GIT_TAG 93e8355fe91d21c7cc21c244ebce32497a840635)
 FetchContent_MakeAvailable(quartz)
 
 include_directories("src" "src/barbershop")

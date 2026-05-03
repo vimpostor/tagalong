@@ -12,16 +12,26 @@ AppWindow {
 	Material.theme: Material.System
 	Material.primary: Material.Indigo
 	Material.accent: Material.Pink
-	BarbershopPage {
-		anchors.fill: parent
-		visible: !Backend.documentType.length
-	}
-	SheetmusicView {
-		anchors.fill: parent
-		visible: Backend.documentType.length
-	}
-	Snackbar {
-		text: Backend.snackbar
-		onTextChanged: open();
+	NavigationDrawerPage {
+		model: ["Barbershop", "Piano"]
+		Item {
+			BarbershopPage {
+				anchors.fill: parent
+				visible: !Backend.documentType.length
+			}
+			SheetmusicView {
+				anchors.fill: parent
+				visible: Backend.documentType.length
+			}
+			Snackbar {
+				text: Backend.snackbar
+				onTextChanged: open();
+			}
+		}
+		Item {
+			Piano {
+				anchors.fill: parent
+			}
+		}
 	}
 }
