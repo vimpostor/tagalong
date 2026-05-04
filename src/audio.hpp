@@ -3,7 +3,7 @@
 #include <QAudioSink>
 #include <QAudioSource>
 
-#include <fftune/fftune.hpp>
+#include <fftune.hpp>
 #include <quartz/macros.hpp>
 
 static const constexpr qint64 bufferSize = 256;
