@@ -5,7 +5,7 @@ AudioBuffer::AudioBuffer() {
 }
 
 qint64 AudioBuffer::readData(char *data, qint64 maxSize) {
-	const auto n = currentSample + (maxSize ? maxSize / sizeof(float) : defaultSize);
+	const auto n = currentSample + (maxSize ? maxSize / sizeof(float) : bufferSize);
 	auto d = reinterpret_cast<float *>(data);
 	for (; currentSample < n; ++currentSample) {
 		float volume = static_cast<float>(currentFadeSample) / (fadeSamples - 1);
@@ -49,7 +49,7 @@ qint64 AudioBuffer::readData(char *data, qint64 maxSize) {
 	float dec = std::modf(frequency, &iptr);
 	currentSample = iptr / frequency * (currentSample % samplerate) + dec / frequency * currentSample;
 
-	return maxSize ? maxSize : defaultSize * sizeof(float);
+	return maxSize ? maxSize : bufferSize * sizeof(float);
 }
 
 qint64 AudioBuffer::writeData(const char *data, qint64 maxSize) {
@@ -57,7 +57,30 @@ qint64 AudioBuffer::writeData(const char *data, qint64 maxSize) {
 }
 
 qint64 AudioBuffer::bytesAvailable() const {
-	return defaultSize * sizeof(float) + QIODevice::bytesAvailable();
+	return bufferSize * sizeof(float) + QIODevice::bytesAvailable();
+}
+
+PitchBuffer::PitchBuffer() {
+	open(QIODeviceBase::WriteOnly);
+}
+
+qint64 PitchBuffer::readData(char *data, qint64 maxSize) {
+	return -1;
+}
+
+qint64 PitchBuffer::writeData(const char *data, qint64 maxSize) {
+	auto d = reinterpret_cast<const float *>(data);
+	const auto n = std::max(bufferSize, maxSize / static_cast<qint64>(sizeof(float)));
+	buf.read(d, n);
+	sampleCount += n;
+	if (sampleCount > conf.buffer_size) {
+		auto notes = detector.detect(buf);
+		if (notes.size()) {
+			emit noteDetected(notes.front());
+		}
+		sampleCount = 0;
+	}
+	return n * sizeof(float);
 }
 
 void Audio::play(int note) {
@@ -77,6 +100,9 @@ void Audio::stop() {
 		return;
 	}
 	sink->stop();
+	source->stop();
+	sink.reset();
+	source.reset();
 	ok = false;
 }
 
@@ -85,11 +111,22 @@ void Audio::init() {
 		return;
 	}
 
+	connect(&recording, &PitchBuffer::noteDetected, this, &Audio::handleNote);
+
 	auto fmt = QAudioFormat();
 	fmt.setChannelCount(1);
 	fmt.setSampleRate(buf.samplerate);
 	fmt.setSampleFormat(QAudioFormat::SampleFormat::Float);
+
 	sink = std::make_unique<QAudioSink>(fmt);
 	sink->start(&buf);
+
+	source = std::make_unique<QAudioSource>(fmt);
+	source->start(&recording);
 	ok = true;
+}
+
+void Audio::handleNote(const fftune::note_estimate &note) {
+	detectedNote = note.note - fftune::MidiA4 + 9;
+	emit detectedNoteChanged();
 }

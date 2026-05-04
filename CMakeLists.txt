@@ -15,6 +15,9 @@ list(APPEND LINK_LIBS ${QT_MODULES})
 include(FetchContent)
 FetchContent_Declare(quartz GIT_REPOSITORY https://github.com/vimpostor/quartz.git GIT_TAG a80d7e7a80b531ab7a559331127a9385d65a82d7)
 FetchContent_MakeAvailable(quartz)
+FetchContent_Declare(fftune GIT_REPOSITORY https://github.com/fftune/fftune.git GIT_TAG 14e3f4ebd113228626ab2c7827d1365385c9c36a)
+FetchContent_MakeAvailable(fftune)
+list(APPEND LINK_LIBS fftune)
 
 include_directories("src" "src/barbershop")
 
