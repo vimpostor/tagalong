@@ -70,7 +70,7 @@ qint64 PitchBuffer::readData(char *data, qint64 maxSize) {
 
 qint64 PitchBuffer::writeData(const char *data, qint64 maxSize) {
 	auto d = reinterpret_cast<const float *>(data);
-	const auto n = std::max(bufferSize, maxSize / static_cast<qint64>(sizeof(float)));
+	const auto n = std::min(bufferSize, maxSize / static_cast<qint64>(sizeof(float)));
 	buf.read(d, n);
 	sampleCount += n;
 	if (sampleCount > conf.buffer_size) {
