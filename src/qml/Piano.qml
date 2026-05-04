@@ -12,7 +12,7 @@ Item {
 			x: Math.floor((index + (index > 4)) / 2) * parent.width / 7 + isBlack * parent.width / 14 * 1.5
 			width: parent.width / 7 / (1 + isBlack)
 			height: parent.height / (1 + isBlack)
-			color: Audio.detectedNote == index ? Material.color(Material.Pink, Material.Shade500) : (taphandler.pressed ? Material.color(Material.Blue, Material.Shade500) : isBlack ? Material.color(Material.Grey, Material.Shade900) : Material.color(Material.Grey, Material.Shade200))
+			color: taphandler.pressed ? Material.color(Material.Blue, Material.Shade500) : Audio.detectedNote == index ? Material.color(Material.Pink, Material.Shade500) : isBlack ? Material.color(Material.Grey, Material.Shade900) : Material.color(Material.Grey, Material.Shade200)
 			border.width: 1
 			z: isBlack
 			TapHandler {
