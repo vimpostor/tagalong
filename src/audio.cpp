@@ -90,7 +90,7 @@ void Audio::play(int note) {
 		buf.currentFadeSample = 0;
 		return;
 	}
-	buf.frequency = 440 * std::pow(2, (note - 9) / 12.0);
+	buf.frequency = fftune::midi_to_freq(note);
 	buf.stop = false;
 	buf.currentFadeSample = 0;
 }
@@ -127,6 +127,6 @@ void Audio::init() {
 }
 
 void Audio::handleNote(const fftune::note_estimate &note) {
-	detectedNote = note.note - fftune::MidiA4 + 9;
+	detectedNote = note.note;
 	emit detectedNoteChanged();
 }

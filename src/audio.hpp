@@ -14,7 +14,7 @@ public:
 	AudioBuffer();
 
 	uint32_t samplerate = 48000;
-	float frequency = 440;
+	float frequency = fftune::FreqA4;
 	bool stop = true;
 	uint32_t currentFadeSample = 0;
 protected:
