@@ -4,50 +4,48 @@ AudioBuffer::AudioBuffer() {
 	open(QIODeviceBase::ReadOnly);
 }
 
+void AudioBuffer::toggle(int note) {
+	auto it = std::ranges::find_if(notes, [=](const auto &n) { return n.note == note; });
+	if (it == notes.end()) {
+		// add new note
+		NotePlayback n {note, fftune::midi_to_freq(note), false, 0};
+		notes.push_back(n);
+	} else if (it->stop) {
+		// fade in previously stopped note
+		it->stop = false;
+	} else {
+		// fade out
+		it->stop = true;
+		it->currentFadeSample = 0;
+	}
+}
+
 qint64 AudioBuffer::readData(char *data, qint64 maxSize) {
 	const auto n = currentSample + (maxSize ? maxSize / sizeof(float) : bufferSize);
 	auto d = reinterpret_cast<float *>(data);
 	for (; currentSample < n; ++currentSample) {
-		float volume = static_cast<float>(currentFadeSample) / (fadeSamples - 1);
-		if (stop) {
-			volume = 1 - volume;
+		float sample = 0;
+		for (auto &n : notes) {
+			float tone = 0;
+			float volume = static_cast<float>(n.currentFadeSample) / (fadeSamples - 1);
+			if (n.stop) {
+				volume = 1 - volume;
+			}
+			if (n.currentFadeSample < fadeSamples - 1) {
+				n.currentFadeSample++;
+			}
+			const constexpr int overtones = 8;
+			for (int overtone = 1; overtone <= 8; ++overtone) {
+				const constexpr float dampeningConstant = 0.2;
+				const float dampening = 1.f - (static_cast<float>(overtone - 1) / static_cast<float>(overtones - 1) * (1.f - dampeningConstant));
+				tone += dampening * std::sin(2 * M_PI * overtone * n.freq * currentSample / samplerate);
+			}
+			tone *= volume / (overtones - 1);
+			sample += tone;
 		}
-		if (currentFadeSample < fadeSamples - 1) {
-			currentFadeSample++;
-		}
-		float tone = 0;
-		const constexpr int overtones = 8;
-		for (int overtone = 1; overtone <= 8; ++overtone) {
-			const constexpr float dampeningConstant = 0.2;
-			const float dampening = 1.f - (static_cast<float>(overtone - 1) / static_cast<float>(overtones - 1) * (1.f - dampeningConstant));
-			tone += dampening * std::sin(2 * M_PI * overtone * frequency * currentSample / samplerate);
-		}
-		tone /= overtones - 1;
-		*d = volume * tone;
+		*d = sample;
 		++d;
 	}
-
-	/**
-	 * Avoid integer overflow.
-	 * Unfortunately using modulo is only sufficient for integer frequencies.
-	 * For floating point frequencies in general we have to derive a slightly more complicated formula.
-	 * However this should still be faster than arcsin.
-	 *
-	 * Using the sin equality sin(x) = sin(x + i * 2 * pi) for any integer i, we can adjust the new sample index.
-	 * Let f be the tone frequency with integer part fi and decimal part fd, s the samplerate, i the current sample index,
-	 * j = i % samplerate the downshifted sample index, tau = 2 * pi, then we can prove the following:
-	 *
-	 * sin(tau * f * i/s)
-	 * = sin(tau * fi * i/s + tau * fd * i/s)
-	 * = sin(tau * fi * j/s + tau * fd * i/s)
-	 * = sin(tau * f * fi/f * j/s + tau * f * fd/f * i/s)
-	 * = sin(tau * f * ((fi/f * j + fd/f * i) / s))
-	 *
-	 * Thus we can compute the new downshifted index for arbitrary frequencies as the numerator of the above fraction.
-	*/
-	float iptr;
-	float dec = std::modf(frequency, &iptr);
-	currentSample = iptr / frequency * (currentSample % samplerate) + dec / frequency * currentSample;
 
 	return maxSize ? maxSize : bufferSize * sizeof(float);
 }
@@ -83,16 +81,9 @@ qint64 PitchBuffer::writeData(const char *data, qint64 maxSize) {
 	return n * sizeof(float);
 }
 
-void Audio::play(int note) {
+void Audio::toggle(int note) {
 	init();
-	if (note < 0) {
-		buf.stop = true;
-		buf.currentFadeSample = 0;
-		return;
-	}
-	buf.frequency = fftune::midi_to_freq(note);
-	buf.stop = false;
-	buf.currentFadeSample = 0;
+	buf.toggle(note);
 }
 
 void Audio::stop() {

@@ -8,20 +8,26 @@
 
 static const constexpr qint64 bufferSize = 256;
 
+struct NotePlayback {
+	int note = fftune::MidiA4;
+	float freq = fftune::FreqA4;
+	bool stop = false;
+	uint32_t currentFadeSample = 0;
+};
+
 class AudioBuffer : public QIODevice {
 	Q_OBJECT
 public:
 	AudioBuffer();
 
+	void toggle(int note);
 	uint32_t samplerate = 48000;
-	float frequency = fftune::FreqA4;
-	bool stop = true;
-	uint32_t currentFadeSample = 0;
 protected:
 	qint64 readData(char *data, qint64 maxSize) override;
 	qint64 writeData(const char *data, qint64 maxSize) override;
 	qint64 bytesAvailable() const override;
 private:
+	std::vector<NotePlayback> notes;
 	uint32_t currentSample = 0;
 	static const constexpr qint64 fadeSamples = bufferSize / 8;
 };
@@ -51,7 +57,7 @@ class Audio : public QObject {
 public:
 	QML_CPP_SINGLETON(Audio)
 
-	Q_INVOKABLE void play(int note);
+	Q_INVOKABLE void toggle(int note);
 	void stop();
 signals:
 	void detectedNoteChanged();

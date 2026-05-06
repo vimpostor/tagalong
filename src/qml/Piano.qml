@@ -18,8 +18,21 @@ Item {
 			TapHandler {
 				id: taphandler
 				gesturePolicy: TapHandler.WithinBounds
-				onPressedChanged: Audio.play(pressed ? 60 + index : -1);
+				onPressedChanged: Audio.toggle(60 + index);
 			}
 		}
 	}
+	focus: true
+	function handleKey(e) {
+		if (e.isAutoRepeat) {
+			return;
+		}
+		if (e.key >= Qt.Key_A && e.key <= Qt.Key_G) {
+			let k = e.key + 7 * (e.key <= Qt.Key_B) - Qt.Key_C;
+			k = 60 + 2 * k - (k > 2);
+			Audio.toggle(k);
+		}
+	}
+	Keys.onPressed: e => handleKey(e)
+	Keys.onReleased: e => handleKey(e)
 }
