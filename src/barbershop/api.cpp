@@ -32,6 +32,10 @@ void Api::requestTag(TagId id) {
 }
 
 void Api::downloadSheetmusic(Tag &tag) {
+	if (tag.sheetMusicAlt.isEmpty()) {
+		Backend::get()->notifySnackbar("No sheet music provided.");
+		return;
+	}
 	auto res = manager.get(QNetworkRequest(tag.sheetMusicAlt));
 	connect(res, &QNetworkReply::finished, this, std::bind(&Api::handleSheetmusic, this, res, tag));
 	m_downloadActive = true;
