@@ -16,6 +16,18 @@ void Api::init() {
 	}
 }
 
+void Api::reset() {
+	auto file = db.databaseName();
+	db.close();
+	QSqlDatabase::removeDatabase(QSqlDatabase::defaultConnectionName());
+	Settings::get()->setSynced(false);
+	if (!file.isEmpty()) {
+		QFile f {file};
+		f.remove();
+	}
+	init();
+}
+
 void Api::requestTag(TagId id) {
 	auto res = tagFromId(id);
 	if (!res) {
@@ -130,6 +142,7 @@ void Api::parseTags() {
 	}
 
 	auto data = reply->readAll();
+	m_bytesReceived += data.size();
 	if (!currentIndex && data.startsWith("<?xml version=\"1.0\" encoding=\"UTF-8\"")) {
 		// API incorrectly reports the wrong encoding, which breaks XML parsing
 		data.replace(30, 5, "ISO-8859-1");

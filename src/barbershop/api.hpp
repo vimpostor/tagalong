@@ -16,11 +16,13 @@ class Api : public QObject {
 
 	Q_PROPERTY(bool isSyncing MEMBER m_isSyncing NOTIFY syncingChanged)
 	Q_PROPERTY(float syncProgress MEMBER m_syncProgress NOTIFY syncingChanged)
+	Q_PROPERTY(int bytesReceived MEMBER m_bytesReceived NOTIFY syncingChanged)
 	Q_PROPERTY(bool downloadActive MEMBER m_downloadActive NOTIFY downloadActiveChanged)
 public:
 	QML_CPP_SINGLETON(Api)
 
 	void init();
+	Q_INVOKABLE void reset();
 	Q_INVOKABLE void requestTag(TagId id);
 	void downloadSheetmusic(Tag &tag);
 	void handleSheetmusic(QNetworkReply *reply, Tag tag);
@@ -38,6 +40,7 @@ private:
 
 	bool m_isSyncing = false;
 	float m_syncProgress = 0;
+	int m_bytesReceived = 0;
 	bool m_downloadActive = false;
 	QNetworkAccessManager manager;
 	QSqlDatabase db;

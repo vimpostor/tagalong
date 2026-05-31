@@ -36,10 +36,12 @@ AppWindow {
 			}
 		}
 		Item {
-			Label {
-				anchors.centerIn: parent
-				text: "Nothing here yet"
+			SettingsPage {
+				anchors.fill: parent
 			}
 		}
+	}
+	Sync {
+		anchors.fill: parent
 	}
 }

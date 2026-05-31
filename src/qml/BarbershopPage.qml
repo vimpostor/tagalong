@@ -144,25 +144,4 @@ Item {
 			}
 		}
 	}
-	Dialog {
-		title: "Syncing"
-		visible: Api.isSyncing
-		anchors.centerIn: parent
-		closePolicy: Popup.NoAutoClose
-		Column {
-			spacing: 8
-			Label {
-				text: "Downloading tags metadata"
-			}
-			ProgressBar {
-				id: progressbar
-				value: Api.syncProgress
-				indeterminate: !value
-			}
-		}
-	}
-	BusyIndicator {
-		anchors.centerIn: parent
-		visible: Api.downloadActive
-	}
 }
