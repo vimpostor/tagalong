@@ -36,25 +36,26 @@ void Api::requestTag(TagId id) {
 	}
 
 	res->setVisited();
-	if (res->cachedsheetmusic.isEmpty()) {
-		downloadSheetmusic(*res);
+	res->fetchMedia();
+	if (!res->media.contains("SheetMusicAlt")) {
+		downloadMedia("SheetMusicAlt", res->sheetMusicAlt, *res);
 	} else {
-		writeSheetmusic(*res);
+		writeMedia(res->media["SheetMusicAlt"]);
 	}
 }
 
-void Api::downloadSheetmusic(Tag &tag) {
-	if (tag.sheetMusicAlt.isEmpty()) {
-		Backend::get()->notifySnackbar("No sheet music provided.");
+void Api::downloadMedia(const QString &name, const QUrl &src, Tag &tag) {
+	if (src.isEmpty()) {
+		Backend::get()->notifySnackbar("Empty download link.");
 		return;
 	}
-	auto res = manager.get(QNetworkRequest(tag.sheetMusicAlt));
-	connect(res, &QNetworkReply::finished, this, std::bind(&Api::handleSheetmusic, this, res, tag));
+	auto res = manager.get(QNetworkRequest(src));
+	connect(res, &QNetworkReply::finished, this, std::bind(&Api::handleMediaDownload, this, res, name, src, tag));
 	m_downloadActive = true;
 	emit downloadActiveChanged();
 }
 
-void Api::handleSheetmusic(QNetworkReply *reply, Tag tag) {
+void Api::handleMediaDownload(QNetworkReply *reply, const QString &name, const QUrl &src, Tag &tag) {
 	reply->deleteLater();
 	m_downloadActive = false;
 	emit downloadActiveChanged();
@@ -62,21 +63,20 @@ void Api::handleSheetmusic(QNetworkReply *reply, Tag tag) {
 		Backend::get()->notifySnackbar("Download failed: " + reply->errorString());
 		return;
 	}
-	tag.setCachedSheetMusic(reply->readAll());
-	writeSheetmusic(tag);
+	tag.setMedia(name, src, reply->readAll());
+	writeMedia(tag.media[name]);
 }
 
-void Api::writeSheetmusic(Tag &tag) {
+void Api::writeMedia(const Media &media) {
 	QFile f {QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + "/blob"};
 	if (!f.open(QFile::OpenModeFlag::WriteOnly)) {
 		return;
 	}
 
-	f.write(tag.cachedsheetmusic);
+	f.write(media.cache);
 	f.close();
-	tag.sheetmusiclocation = QUrl::fromLocalFile(f.fileName());
-	Backend::get()->setDocumentSource(tag.sheetmusiclocation);
-	const auto suffix = QFileInfo(tag.sheetMusicAlt.toString()).suffix();
+	Backend::get()->setDocumentSource(QUrl::fromLocalFile(f.fileName()));
+	const auto suffix = QFileInfo(media.url.toString()).suffix();
 	Backend::get()->setDocumentType(suffix == "pdf" ? "pdf" : "png");
 }
 
@@ -100,14 +100,16 @@ std::vector<Tag> Api::complete(QString query) {
 	std::vector<Tag> res;
 	q.exec();
 	while (q.next()) {
-		res.push_back(Tag(q));
+		res.push_back(Tag::fromQuery(q));
 	}
 	return res;
 }
 
 void Api::syncMetadata() {
 	QSqlQuery q;
-	q.exec("CREATE TABLE tags(id INT PRIMARY KEY NOT NULL, title TEXT, alttitle TEXT, key TEXT, parts INT, notes TEXT, arranger TEXT, arranged TEXT, sungby TEXT, quartet TEXT, posted INT, collection TEXT, rating REAL, ratingcount INT, downloaded INT, sheetmusic TEXT, sheetmusicalt TEXT, bookmarked INT, visited INT, cachedsheetmusic BLOB DEFAULT NULL)");
+	q.exec("CREATE TABLE tags(id INT PRIMARY KEY NOT NULL, title TEXT, alttitle TEXT, key TEXT, parts INT, notes TEXT, arranger TEXT, arranged TEXT, sungby TEXT, quartet TEXT, posted INT, collection TEXT, rating REAL, ratingcount INT, downloaded INT, sheetmusic TEXT, sheetmusicalt TEXT, bookmarked INT, visited INT)");
+	// generic table for media associated to a tag
+	q.exec("CREATE TABLE media(id TEXT PRIMARY KEY NOT NULL, tag INT, name TEXT, url TEXT, cache BLOB DEFAULT NULL)");
 	xml.clear();
 	pendingtags.clear();
 	invideo = false;
@@ -131,8 +133,7 @@ std::optional<Tag> Api::tagFromId(TagId id) const {
 		return std::nullopt;
 	}
 
-	Tag res {q};
-	return res;
+	return Tag::fromQuery(q);
 }
 
 void Api::parseTags() {
@@ -215,7 +216,7 @@ void Api::parseTags() {
 
 	if (pendingtags.size()) {
 		// insert tags
-		auto params = QString(" (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, NULL),").repeated(pendingtags.size());
+		auto params = QString(" (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0),").repeated(pendingtags.size());
 		params.removeLast(); // remove trailing comma
 		QSqlQuery q;
 		q.prepare("INSERT INTO tags VALUES" + params);
@@ -266,7 +267,7 @@ void Api::initDb() {
 	const QDir dir {QStandardPaths::writableLocation(QStandardPaths::CacheLocation)};
 	if (!dir.exists()) {
 		if (!dir.mkpath(dir.path())) {
-			qWarning() << "Failed to create cache directory";
+			qWarning() << "Failed to create database directory";
 			return;
 		}
 	}

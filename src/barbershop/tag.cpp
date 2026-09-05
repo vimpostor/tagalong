@@ -1,31 +1,39 @@
 #include "tag.hpp"
 
-Tag::Tag(QSqlQuery &q) {
-	id = q.value(0).toInt();
-	title = q.value(1).toString();
-	altTitle = q.value(2).toString();
-	key = q.value(3).toString();
-	parts = q.value(4).toInt();
-	notes = q.value(5).toString();
-	arranger = q.value(6).toString();
-	arranged = q.value(7).toString();
-	sungBy = q.value(8).toString();
-	quartet = q.value(9).toString();
-	posted = QDate::fromJulianDay(q.value(10).toInt());
-	collection = q.value(11).toString();
-	rating = q.value(12).toFloat();
-	ratingCount = q.value(13).toInt();
-	downloaded = q.value(14).toInt();
-	sheetmusic = q.value(15).toUrl();
-	sheetMusicAlt = q.value(16).toUrl();
-	bookmarked = q.value(17).toBool();
+Media Media::fromQuery(QSqlQuery &q) {
+	Media r;
+	r.name = q.value(2).toString();
+	r.url = q.value(3).toUrl();
+	r.cache = q.value(4).toByteArray();
+	return r;
+}
+
+Tag Tag::fromQuery(QSqlQuery &q) {
+	Tag r;
+	r.id = q.value(0).toInt();
+	r.title = q.value(1).toString();
+	r.altTitle = q.value(2).toString();
+	r.key = q.value(3).toString();
+	r.parts = q.value(4).toInt();
+	r.notes = q.value(5).toString();
+	r.arranger = q.value(6).toString();
+	r.arranged = q.value(7).toString();
+	r.sungBy = q.value(8).toString();
+	r.quartet = q.value(9).toString();
+	r.posted = QDate::fromJulianDay(q.value(10).toInt());
+	r.collection = q.value(11).toString();
+	r.rating = q.value(12).toFloat();
+	r.ratingCount = q.value(13).toInt();
+	r.downloaded = q.value(14).toInt();
+	r.sheetmusic = q.value(15).toUrl();
+	r.sheetMusicAlt = q.value(16).toUrl();
+	r.bookmarked = q.value(17).toBool();
 
 	const auto val = q.value(18).toInt();
 	if (val) {
-		visited = QDateTime::fromSecsSinceEpoch(val);
+		r.visited = QDateTime::fromSecsSinceEpoch(val);
 	}
-
-	cachedsheetmusic = q.value(19).toByteArray();
+	return r;
 }
 
 void Tag::setBookmarked(bool b) {
@@ -49,17 +57,34 @@ void Tag::setVisited() {
 	updateSqliteById(q);
 }
 
-void Tag::setCachedSheetMusic(const QByteArray &b) {
-	cachedsheetmusic = b;
+void Tag::setMedia(const QString &name, const QUrl &url, const QByteArray &data) {
 	QSqlQuery q;
-	q.prepare("UPDATE tags SET cachedsheetmusic = ? WHERE id = ?");
-	q.bindValue(0, cachedsheetmusic, QSql::ParamTypeFlag::In | QSql::ParamTypeFlag::Binary);
-	updateSqliteById(q);
+	q.prepare("INSERT INTO media VALUES (?, ?, ?, ?, ?)");
+	int bindpos = 0;
+	q.bindValue(bindpos++, QString("%1_%2").arg(this->id).arg(name));
+	q.bindValue(bindpos++, this->id);
+	q.bindValue(bindpos++, name);
+	q.bindValue(bindpos++, url);
+	q.bindValue(bindpos++, data, QSql::ParamTypeFlag::In | QSql::ParamTypeFlag::Binary);
+	if (!q.exec()) {
+		qWarning() << "Failed to attach media: " << q.lastError().text();
+	}
+	this->media.insert(name, {name, url, data});
+}
+
+void Tag::fetchMedia() {
+	QSqlQuery q;
+	q.prepare("SELECT * FROM media WHERE tag = " + QString::number(id));
+	q.exec();
+	while (q.next()) {
+		auto m = Media::fromQuery(q);
+		media.insert(m.name, m);
+	}
 }
 
 void Tag::updateSqliteById(QSqlQuery &q) {
 	q.bindValue(1, id);
 	if (!q.exec()) {
-		qWarning() << "Failed to update database";
+		qWarning() << "Failed to update database: " << q.lastError().text();
 	}
 }

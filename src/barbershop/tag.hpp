@@ -9,6 +9,19 @@
 
 using TagId = int;
 
+class Media {
+	Q_GADGET
+	Q_PROPERTY(QString name MEMBER name CONSTANT)
+	Q_PROPERTY(QUrl url MEMBER url CONSTANT)
+	Q_PROPERTY(QByteArray cache MEMBER cache CONSTANT)
+public:
+	static Media fromQuery(QSqlQuery &q);
+
+	QString name;
+	QUrl url;
+	QByteArray cache;
+};
+
 class Tag {
 	Q_GADGET
 	Q_PROPERTY(int id MEMBER id CONSTANT)
@@ -31,11 +44,8 @@ class Tag {
 
 	Q_PROPERTY(bool bookmarked MEMBER bookmarked CONSTANT)
 	Q_PROPERTY(QDateTime visited MEMBER visited CONSTANT)
-
-	Q_PROPERTY(QUrl sheetmusiclocation MEMBER sheetmusiclocation CONSTANT)
 public:
-	Tag() {};
-	explicit Tag(QSqlQuery &q);
+	static Tag fromQuery(QSqlQuery &q);
 
 	TagId id = 0;
 	QString title;
@@ -58,13 +68,12 @@ public:
 	bool bookmarked = false;
 	QDateTime visited;
 
-	QUrl sheetmusiclocation;
-
-	QByteArray cachedsheetmusic;
+	QMap<QString, Media> media;
 
 	Q_INVOKABLE void setBookmarked(bool b);
 	void setVisited();
-	void setCachedSheetMusic(const QByteArray &b);
+	void setMedia(const QString &name, const QUrl &url, const QByteArray &data);
+	void fetchMedia();
 private:
 	void updateSqliteById(QSqlQuery &q);
 };
