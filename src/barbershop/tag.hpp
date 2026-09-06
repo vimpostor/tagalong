@@ -17,6 +17,7 @@ class Media {
 public:
 	static Media fromQuery(QSqlQuery &q);
 
+
 	QString name;
 	QUrl url;
 	QByteArray cache;
@@ -39,13 +40,12 @@ class Tag {
 	Q_PROPERTY(float rating MEMBER rating CONSTANT)
 	Q_PROPERTY(int ratingCount MEMBER ratingCount CONSTANT)
 	Q_PROPERTY(int downloaded MEMBER downloaded CONSTANT)
-	Q_PROPERTY(QUrl sheetmusic MEMBER sheetmusic CONSTANT)
-	Q_PROPERTY(QUrl sheetMusicAlt MEMBER sheetMusicAlt CONSTANT)
 
 	Q_PROPERTY(bool bookmarked MEMBER bookmarked CONSTANT)
 	Q_PROPERTY(QDateTime visited MEMBER visited CONSTANT)
 public:
 	static Tag fromQuery(QSqlQuery &q);
+	static QString mediaId(TagId tagId, QString mediaName);
 
 	TagId id = 0;
 	QString title;
@@ -62,8 +62,6 @@ public:
 	float rating = 0;
 	int ratingCount = 0;
 	int downloaded = 0;
-	QUrl sheetmusic;
-	QUrl sheetMusicAlt;
 
 	bool bookmarked = false;
 	QDateTime visited;

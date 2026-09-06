@@ -2,38 +2,42 @@
 
 Media Media::fromQuery(QSqlQuery &q) {
 	Media r;
-	r.name = q.value(2).toString();
-	r.url = q.value(3).toUrl();
-	r.cache = q.value(4).toByteArray();
+	int bindpos = 2;
+	r.name = q.value(bindpos++).toString();
+	r.url = q.value(bindpos++).toUrl();
+	r.cache = q.value(bindpos++).toByteArray();
 	return r;
 }
 
 Tag Tag::fromQuery(QSqlQuery &q) {
 	Tag r;
-	r.id = q.value(0).toInt();
-	r.title = q.value(1).toString();
-	r.altTitle = q.value(2).toString();
-	r.key = q.value(3).toString();
-	r.parts = q.value(4).toInt();
-	r.notes = q.value(5).toString();
-	r.arranger = q.value(6).toString();
-	r.arranged = q.value(7).toString();
-	r.sungBy = q.value(8).toString();
-	r.quartet = q.value(9).toString();
-	r.posted = QDate::fromJulianDay(q.value(10).toInt());
-	r.collection = q.value(11).toString();
-	r.rating = q.value(12).toFloat();
-	r.ratingCount = q.value(13).toInt();
-	r.downloaded = q.value(14).toInt();
-	r.sheetmusic = q.value(15).toUrl();
-	r.sheetMusicAlt = q.value(16).toUrl();
-	r.bookmarked = q.value(17).toBool();
+	int bindpos = 0;
+	r.id = q.value(bindpos++).toInt();
+	r.title = q.value(bindpos++).toString();
+	r.altTitle = q.value(bindpos++).toString();
+	r.key = q.value(bindpos++).toString();
+	r.parts = q.value(bindpos++).toInt();
+	r.notes = q.value(bindpos++).toString();
+	r.arranger = q.value(bindpos++).toString();
+	r.arranged = q.value(bindpos++).toString();
+	r.sungBy = q.value(bindpos++).toString();
+	r.quartet = q.value(bindpos++).toString();
+	r.posted = QDate::fromJulianDay(bindpos++);
+	r.collection = q.value(bindpos++).toString();
+	r.rating = q.value(bindpos++).toFloat();
+	r.ratingCount = q.value(bindpos++).toInt();
+	r.downloaded = q.value(bindpos++).toInt();
+	r.bookmarked = q.value(bindpos++).toBool();
 
-	const auto val = q.value(18).toInt();
+	const auto val = q.value(bindpos++).toInt();
 	if (val) {
 		r.visited = QDateTime::fromSecsSinceEpoch(val);
 	}
 	return r;
+}
+
+QString Tag::mediaId(TagId tagId, QString mediaName) {
+	return QString("%1_%2").arg(tagId).arg(mediaName);
 }
 
 void Tag::setBookmarked(bool b) {
@@ -59,13 +63,10 @@ void Tag::setVisited() {
 
 void Tag::setMedia(const QString &name, const QUrl &url, const QByteArray &data) {
 	QSqlQuery q;
-	q.prepare("INSERT INTO media VALUES (?, ?, ?, ?, ?)");
+	q.prepare("UPDATE media SET cache = ? WHERE id = ?");
 	int bindpos = 0;
-	q.bindValue(bindpos++, QString("%1_%2").arg(this->id).arg(name));
-	q.bindValue(bindpos++, this->id);
-	q.bindValue(bindpos++, name);
-	q.bindValue(bindpos++, url);
 	q.bindValue(bindpos++, data, QSql::ParamTypeFlag::In | QSql::ParamTypeFlag::Binary);
+	q.bindValue(bindpos++, mediaId(this->id, name));
 	if (!q.exec()) {
 		qWarning() << "Failed to attach media: " << q.lastError().text();
 	}

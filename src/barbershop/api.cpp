@@ -38,24 +38,29 @@ void Api::requestTag(TagId id) {
 	res->setVisited();
 	res->fetchMedia();
 	if (!res->media.contains("SheetMusicAlt")) {
-		downloadMedia("SheetMusicAlt", res->sheetMusicAlt, *res);
+		Backend::get()->notifySnackbar("No sheet music provided.");
+		return;
+	}
+	auto &m = res->media["SheetMusicAlt"];
+	if (m.cache.isEmpty()) {
+		downloadMedia(m, *res);
 	} else {
-		writeMedia(res->media["SheetMusicAlt"]);
+		writeMedia(m);
 	}
 }
 
-void Api::downloadMedia(const QString &name, const QUrl &src, Tag &tag) {
-	if (src.isEmpty()) {
+void Api::downloadMedia(const Media &media, Tag &tag) {
+	if (media.url.isEmpty()) {
 		Backend::get()->notifySnackbar("Empty download link.");
 		return;
 	}
-	auto res = manager.get(QNetworkRequest(src));
-	connect(res, &QNetworkReply::finished, this, std::bind(&Api::handleMediaDownload, this, res, name, src, tag));
+	auto reply = manager.get(QNetworkRequest(media.url));
+	connect(reply, &QNetworkReply::finished, this, std::bind(&Api::handleMediaDownload, this, reply, media, tag));
 	m_downloadActive = true;
 	emit downloadActiveChanged();
 }
 
-void Api::handleMediaDownload(QNetworkReply *reply, const QString &name, const QUrl &src, Tag &tag) {
+void Api::handleMediaDownload(QNetworkReply *reply, const Media &media, Tag &tag) {
 	reply->deleteLater();
 	m_downloadActive = false;
 	emit downloadActiveChanged();
@@ -63,8 +68,8 @@ void Api::handleMediaDownload(QNetworkReply *reply, const QString &name, const Q
 		Backend::get()->notifySnackbar("Download failed: " + reply->errorString());
 		return;
 	}
-	tag.setMedia(name, src, reply->readAll());
-	writeMedia(tag.media[name]);
+	tag.setMedia(media.name, media.url, reply->readAll());
+	writeMedia(tag.media[media.name]);
 }
 
 void Api::writeMedia(const Media &media) {
@@ -107,11 +112,12 @@ std::vector<Tag> Api::complete(QString query) {
 
 void Api::syncMetadata() {
 	QSqlQuery q;
-	q.exec("CREATE TABLE tags(id INT PRIMARY KEY NOT NULL, title TEXT, alttitle TEXT, key TEXT, parts INT, notes TEXT, arranger TEXT, arranged TEXT, sungby TEXT, quartet TEXT, posted INT, collection TEXT, rating REAL, ratingcount INT, downloaded INT, sheetmusic TEXT, sheetmusicalt TEXT, bookmarked INT, visited INT)");
+	q.exec("CREATE TABLE tags(id INT PRIMARY KEY NOT NULL, title TEXT, alttitle TEXT, key TEXT, parts INT, notes TEXT, arranger TEXT, arranged TEXT, sungby TEXT, quartet TEXT, posted INT, collection TEXT, rating REAL, ratingcount INT, downloaded INT, bookmarked INT, visited INT)");
 	// generic table for media associated to a tag
 	q.exec("CREATE TABLE media(id TEXT PRIMARY KEY NOT NULL, tag INT, name TEXT, url TEXT, cache BLOB DEFAULT NULL)");
 	xml.clear();
 	pendingtags.clear();
+	pendingmedia.clear();
 	invideo = false;
 	tagsAvailable = 0;
 	currentIndex = 0;
@@ -137,6 +143,8 @@ std::optional<Tag> Api::tagFromId(TagId id) const {
 }
 
 void Api::parseTags() {
+	constexpr const auto mediaNames = std::to_array<QStringView>({u"SheetMusic", u"SheetMusicAlt"});
+
 	if (reply->error()) {
 		Backend::get()->notifySnackbar("Network request failed: " + reply->errorString());
 		return;
@@ -158,6 +166,7 @@ void Api::parseTags() {
 			if (currentName == "tags") {
 				tagsAvailable = xml.attributes().value("count").toInt();
 				pendingtags.reserve(tagsAvailable);
+				pendingmedia.reserve(tagsAvailable * mediaNames.size());
 			} else if (currentName == "tag") {
 				currenttag = {};
 			} else if (currentName == "videos") {
@@ -165,6 +174,9 @@ void Api::parseTags() {
 			}
 		} else if (token == QXmlStreamReader::EndElement) {
 			if (xml.name() == "tag") {
+				for (auto &m : currenttag.media) {
+					pendingmedia.emplace_back(std::make_pair(currenttag.id, m));
+				}
 				pendingtags.emplace_back(currenttag);
 				currentIndex++;
 			} else if (xml.name() == "videos") {
@@ -201,10 +213,8 @@ void Api::parseTags() {
 				currenttag.ratingCount = xml.text().toInt();
 			} else if (currentName == "Downloaded") {
 				currenttag.downloaded = xml.text().toInt();
-			} else if (currentName == "SheetMusic") {
-				currenttag.sheetmusic = xml.text().toString();
-			} else if (currentName == "SheetMusicAlt") {
-				currenttag.sheetMusicAlt = xml.text().toString();
+			} else if (std::ranges::contains(mediaNames, currentName)) {
+				currenttag.media[currentName] = {currentName, xml.text().toString()};
 			}
 		}
 	}
@@ -215,12 +225,18 @@ void Api::parseTags() {
 	}
 
 	if (pendingtags.size()) {
-		// insert tags
-		auto params = QString(" (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0),").repeated(pendingtags.size());
-		params.removeLast(); // remove trailing comma
 		QSqlQuery q;
-		q.prepare("INSERT INTO tags VALUES" + params);
 		int bindpos = 0;
+
+		auto prepare = [&](const QString &construct, const QString &table, unsigned long size) {
+			bindpos = 0;
+			auto params = QString(" %1,").arg(construct).repeated(size);
+			params.removeLast(); // remove trailing comma
+			q.prepare(QString("INSERT INTO %1 VALUES%2").arg(table).arg(params));
+		};
+
+		// insert tags
+		prepare("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0)", "tags", pendingtags.size());
 		for (size_t i = 0; i < pendingtags.size(); ++i) {
 			const auto &t = pendingtags[i];
 			q.bindValue(bindpos++, t.id);
@@ -238,14 +254,27 @@ void Api::parseTags() {
 			q.bindValue(bindpos++, t.rating);
 			q.bindValue(bindpos++, t.ratingCount);
 			q.bindValue(bindpos++, t.downloaded);
-			q.bindValue(bindpos++, t.sheetmusic.toString());
-			q.bindValue(bindpos++, t.sheetMusicAlt.toString());
 		}
 		if (!q.exec()) {
 			Backend::get()->notifySnackbar("Failed to insert tags: " + q.lastError().text());
 		}
-
 		pendingtags.clear();
+
+		if (pendingmedia.size()) {
+			// insert media
+			prepare("(?, ?, ?, ?, NULL)", "media", pendingmedia.size());
+			for (size_t i = 0; i < pendingmedia.size(); ++i) {
+				const auto &[id, m] = pendingmedia[i];
+				q.bindValue(bindpos++, Tag::mediaId(id, m.name));
+				q.bindValue(bindpos++, id);
+				q.bindValue(bindpos++, m.name);
+				q.bindValue(bindpos++, m.url);
+			}
+			if (!q.exec()) {
+				Backend::get()->notifySnackbar("Failed to insert media: " + q.lastError().text());
+			}
+			pendingmedia.clear();
+		}
 	}
 
 	if (token == QXmlStreamReader::EndDocument && xml.error() == QXmlStreamReader::Error::NoError && currentIndex == tagsAvailable) {

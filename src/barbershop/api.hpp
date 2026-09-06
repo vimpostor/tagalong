@@ -24,8 +24,8 @@ public:
 	void init();
 	Q_INVOKABLE void reset();
 	Q_INVOKABLE void requestTag(TagId id);
-	void downloadMedia(const QString &name, const QUrl &src, Tag &tag);
-	void handleMediaDownload(QNetworkReply *reply, const QString &name, const QUrl &src, Tag &tag);
+	void downloadMedia(const Media &media, Tag &tag);
+	void handleMediaDownload(QNetworkReply *reply, const Media &media, Tag &tag);
 	void writeMedia(const Media &tag);
 	std::vector<Tag> complete(QString query);
 	void syncMetadata();
@@ -49,6 +49,7 @@ private:
 	QNetworkReply *reply = nullptr;
 	QXmlStreamReader xml;
 	std::vector<Tag> pendingtags;
+	std::vector<std::pair<TagId, Media>> pendingmedia;
 	Tag currenttag;
 	bool invideo = false;
 	int tagsAvailable = 0;

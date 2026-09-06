@@ -14,6 +14,10 @@ Item {
 			property bool insearch: false
 			Layout.fillWidth: true
 			placeholderText: "Search Tags"
+			Shortcut {
+				sequences: ["Ctrl+K"]
+				onActivated: search.forceActiveFocus();
+			}
 			onSearched: {
 				search.insearch = false;
 				const t = parseInt(text)
