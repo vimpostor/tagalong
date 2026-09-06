@@ -16,7 +16,7 @@ class Media {
 	Q_PROPERTY(QByteArray cache MEMBER cache CONSTANT)
 public:
 	static Media fromQuery(QSqlQuery &q);
-	static constexpr const auto audioNames = std::to_array<QStringView>({u"AllParts", u"Bass", u"Bari", u"Lead", u"Tenor"});
+	static constexpr const auto audioNames = std::to_array<QStringView>({u"AllParts", u"Bass", u"Bari", u"Lead", u"Tenor", u"Other1", u"Other2", u"Other3", u"Other4"});
 	bool isAudio() const;
 
 

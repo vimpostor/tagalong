@@ -18,16 +18,24 @@ void Api::init() {
 	connect(PlaybackModel::get(), &PlaybackModel::playRequested, this, &Api::handlePlayRequest);
 }
 
-void Api::reset() {
-	auto file = db.databaseName();
-	db.close();
-	QSqlDatabase::removeDatabase(QSqlDatabase::defaultConnectionName());
-	Settings::get()->setSynced(false);
-	if (!file.isEmpty()) {
-		QFile f {file};
-		f.remove();
+void Api::reset(bool hard) {
+	if (hard) {
+		auto file = db.databaseName();
+		db.close();
+		QSqlDatabase::removeDatabase(QSqlDatabase::defaultConnectionName());
+		Settings::get()->setSynced(false);
+		if (!file.isEmpty()) {
+			QFile f {file};
+			f.remove();
+		}
+		init();
+	} else {
+		QSqlQuery q;
+		q.prepare("UPDATE media SET cache = NULL");
+		q.exec();
+		q.prepare("VACUUM");
+		q.exec();
 	}
-	init();
 }
 
 void Api::requestTag(TagId id) {
@@ -155,7 +163,7 @@ std::optional<Tag> Api::tagFromId(TagId id) const {
 }
 
 void Api::parseTags() {
-	constexpr const auto mediaNames = std::to_array<QStringView>({u"SheetMusic", u"SheetMusicAlt", u"AllParts", u"Bass", u"Bari", u"Lead", u"Tenor"});
+	constexpr const auto mediaNames = std::to_array<QStringView>({u"SheetMusic", u"SheetMusicAlt", u"AllParts", u"Bass", u"Bari", u"Lead", u"Tenor", u"Other1", u"Other2", u"Other3", u"Other4"});
 
 	if (reply->error()) {
 		Backend::get()->notifySnackbar("Network request failed: " + reply->errorString());

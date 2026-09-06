@@ -5,9 +5,18 @@ import Quartz
 import Backend
 
 Item {
-	Button {
+	GroupBox {
+		title: "Settings"
 		anchors.centerIn: parent
-		text: "Clear cache"
-		onClicked: Api.reset();
+		Column {
+			Button {
+				text: "Clear entire cache"
+				onClicked: Api.reset(true);
+			}
+			Button {
+				text: "Clear only media cache"
+				onClicked: Api.reset(false);
+			}
+		}
 	}
 }

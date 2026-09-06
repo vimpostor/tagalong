@@ -22,7 +22,7 @@ public:
 	QML_CPP_SINGLETON(Api)
 
 	void init();
-	Q_INVOKABLE void reset();
+	Q_INVOKABLE void reset(bool hard = false);
 	Q_INVOKABLE void requestTag(TagId id);
 	void downloadMedia(const Media &media, Tag &tag);
 	void handleMediaDownload(QNetworkReply *reply, const Media &media, Tag &tag);
