@@ -9,6 +9,10 @@ Media Media::fromQuery(QSqlQuery &q) {
 	return r;
 }
 
+bool Media::isAudio() const {
+	return std::ranges::contains(audioNames, name);
+}
+
 Tag Tag::fromQuery(QSqlQuery &q) {
 	Tag r;
 	int bindpos = 0;
@@ -22,7 +26,7 @@ Tag Tag::fromQuery(QSqlQuery &q) {
 	r.arranged = q.value(bindpos++).toString();
 	r.sungBy = q.value(bindpos++).toString();
 	r.quartet = q.value(bindpos++).toString();
-	r.posted = QDate::fromJulianDay(bindpos++);
+	r.posted = QDate::fromJulianDay(q.value(bindpos++).toInt());
 	r.collection = q.value(bindpos++).toString();
 	r.rating = q.value(bindpos++).toFloat();
 	r.ratingCount = q.value(bindpos++).toInt();
@@ -70,7 +74,7 @@ void Tag::setMedia(const QString &name, const QUrl &url, const QByteArray &data)
 	if (!q.exec()) {
 		qWarning() << "Failed to attach media: " << q.lastError().text();
 	}
-	this->media.insert(name, {name, url, data});
+	this->media[name].cache = data;
 }
 
 void Tag::fetchMedia() {
@@ -79,7 +83,7 @@ void Tag::fetchMedia() {
 	q.exec();
 	while (q.next()) {
 		auto m = Media::fromQuery(q);
-		media.insert(m.name, m);
+		media[m.name] = m;
 	}
 }
 

@@ -27,6 +27,7 @@ public:
 	void downloadMedia(const Media &media, Tag &tag);
 	void handleMediaDownload(QNetworkReply *reply, const Media &media, Tag &tag);
 	void writeMedia(const Media &tag);
+	void handlePlayRequest(const Media *media);
 	std::vector<Tag> complete(QString query);
 	void syncMetadata();
 signals:
@@ -37,6 +38,7 @@ private:
 	void parseTags();
 	void handleTagsFinished();
 	void initDb();
+	void downloadAndView(const Media &media);
 
 	bool m_isSyncing = false;
 	float m_syncProgress = 0;

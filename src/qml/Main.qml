@@ -25,6 +25,10 @@ AppWindow {
 				anchors.fill: parent
 				visible: Backend.documentType.length
 			}
+			PlaybackOverlay {
+				anchors.fill: parent
+				anchors.topMargin: parent.height - 200
+			}
 			Snackbar {
 				text: Backend.snackbar
 				onTextChanged: open();

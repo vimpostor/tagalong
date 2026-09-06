@@ -9,9 +9,13 @@ Rectangle {
 	property alias source: pdf.source
 	color: "#FFFFFF"
 	focus: true
+	function quit() {
+		PlaybackModel.reset();
+		Backend.documentType = "";
+	}
 	Keys.onPressed: ev => {
 		if (ev.key == Qt.Key_Escape || ev.key == Qt.Key_Back) {
-			Backend.documentType = "";
+			quit();
 			ev.accepted = true;
 		}
 	}
@@ -38,7 +42,7 @@ Rectangle {
 				} else if (p.position.x < pdf.width / 3 && pdf.currentFrame > 0) {
 					pdf.currentFrame--;
 				} else {
-					ic.visible = !ic.visible
+					Backend.overlayVisible = !Backend.overlayVisible;
 				}
 			}
 		}
@@ -55,9 +59,9 @@ Rectangle {
 		id: ic
 		anchors.right: parent.right
 		anchors.top: parent.top
-		visible: false
+		visible: Backend.overlayVisible
 		ico.name: "close"
 		ico.color: Material.primary
-		onClicked: Backend.documentType = ""
+		onClicked: quit();
 	}
 }

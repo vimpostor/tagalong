@@ -11,6 +11,11 @@ void Backend::setDocumentType(QString type) {
 	emit documentTypeChanged();
 }
 
+void Backend::setAudioSource(QUrl src) {
+	audioSource = src;
+	emit audioSourceChanged();
+}
+
 void Backend::notifySnackbar(QString s) {
 	qDebug() << s;
 	snackbar = s;

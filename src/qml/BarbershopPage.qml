@@ -73,7 +73,7 @@ Item {
 			model: TagCompletionsModel
 			clip: true
 			spacing: 8
-			delegate: Item {
+			delegate: ItemDelegate {
 				width: listview.width
 				height: 60
 				Column {

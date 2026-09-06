@@ -5,6 +5,7 @@
 #include <QStandardPaths>
 
 #include "backend.hpp"
+#include "playbackmodel.hpp"
 #include "settings.hpp"
 
 const QUrl endpoint {"http://www.barbershoptags.com/api.php"};
@@ -14,6 +15,7 @@ void Api::init() {
 	if (!Settings::get()->getSynced() || db.tables().empty()) {
 		syncMetadata();
 	}
+	connect(PlaybackModel::get(), &PlaybackModel::playRequested, this, &Api::handlePlayRequest);
 }
 
 void Api::reset() {
@@ -29,24 +31,23 @@ void Api::reset() {
 }
 
 void Api::requestTag(TagId id) {
+	PlaybackModel::get()->reset();
 	auto res = tagFromId(id);
 	if (!res) {
 		Backend::get()->notifySnackbar("Tag not found");
 		return;
 	}
+	currenttag = *res;
 
-	res->setVisited();
-	res->fetchMedia();
-	if (!res->media.contains("SheetMusicAlt")) {
+	currenttag.setVisited();
+	currenttag.fetchMedia();
+	PlaybackModel::get()->setTag(currenttag);
+	if (!currenttag.media.contains("SheetMusicAlt")) {
 		Backend::get()->notifySnackbar("No sheet music provided.");
 		return;
 	}
-	auto &m = res->media["SheetMusicAlt"];
-	if (m.cache.isEmpty()) {
-		downloadMedia(m, *res);
-	} else {
-		writeMedia(m);
-	}
+	auto &m = currenttag.media["SheetMusicAlt"];
+	downloadAndView(m);
 }
 
 void Api::downloadMedia(const Media &media, Tag &tag) {
@@ -73,16 +74,27 @@ void Api::handleMediaDownload(QNetworkReply *reply, const Media &media, Tag &tag
 }
 
 void Api::writeMedia(const Media &media) {
-	QFile f {QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + "/blob"};
+	const bool isAudio = media.isAudio();
+	QFile f {QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + QDir::separator() + (isAudio ? "audio" : "blob")};
 	if (!f.open(QFile::OpenModeFlag::WriteOnly)) {
 		return;
 	}
 
 	f.write(media.cache);
 	f.close();
-	Backend::get()->setDocumentSource(QUrl::fromLocalFile(f.fileName()));
-	const auto suffix = QFileInfo(media.url.toString()).suffix();
-	Backend::get()->setDocumentType(suffix == "pdf" ? "pdf" : "png");
+
+	auto src = QUrl::fromLocalFile(f.fileName());
+	if (isAudio) {
+		Backend::get()->setAudioSource(src);
+	} else {
+		Backend::get()->setDocumentSource(src);
+		const auto suffix = QFileInfo(media.url.toString()).suffix();
+		Backend::get()->setDocumentType(suffix == "pdf" ? "pdf" : "png");
+	}
+}
+
+void Api::handlePlayRequest(const Media *media) {
+	downloadAndView(*media);
 }
 
 std::vector<Tag> Api::complete(QString query) {
@@ -143,7 +155,7 @@ std::optional<Tag> Api::tagFromId(TagId id) const {
 }
 
 void Api::parseTags() {
-	constexpr const auto mediaNames = std::to_array<QStringView>({u"SheetMusic", u"SheetMusicAlt"});
+	constexpr const auto mediaNames = std::to_array<QStringView>({u"SheetMusic", u"SheetMusicAlt", u"AllParts", u"Bass", u"Bari", u"Lead", u"Tenor"});
 
 	if (reply->error()) {
 		Backend::get()->notifySnackbar("Network request failed: " + reply->errorString());
@@ -174,7 +186,7 @@ void Api::parseTags() {
 			}
 		} else if (token == QXmlStreamReader::EndElement) {
 			if (xml.name() == "tag") {
-				for (auto &m : currenttag.media) {
+				for (auto &[_, m] : currenttag.media) {
 					pendingmedia.emplace_back(std::make_pair(currenttag.id, m));
 				}
 				pendingtags.emplace_back(currenttag);
@@ -304,5 +316,13 @@ void Api::initDb() {
 	if (!db.open()) {
 		Backend::get()->notifySnackbar("Failed to open db: " + db.lastError().text());
 		return;
+	}
+}
+
+void Api::downloadAndView(const Media &media) {
+	if (media.cache.isEmpty()) {
+		downloadMedia(media, currenttag);
+	} else {
+		writeMedia(media);
 	}
 }

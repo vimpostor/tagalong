@@ -14,7 +14,7 @@ list(APPEND LINK_LIBS ${QT_MODULES})
 
 include(FetchContent)
 
-FetchContent_Declare(quartz GIT_REPOSITORY https://github.com/vimpostor/quartz.git GIT_TAG 0db730196040d28ca7cbac929927e3cfb422483c)
+FetchContent_Declare(quartz GIT_REPOSITORY https://github.com/vimpostor/quartz.git GIT_TAG f57b0566c59474e99b1d847b2a4b5cdf453b3001)
 FetchContent_MakeAvailable(quartz)
 
 if(ANDROID)

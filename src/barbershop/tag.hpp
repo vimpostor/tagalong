@@ -16,6 +16,8 @@ class Media {
 	Q_PROPERTY(QByteArray cache MEMBER cache CONSTANT)
 public:
 	static Media fromQuery(QSqlQuery &q);
+	static constexpr const auto audioNames = std::to_array<QStringView>({u"AllParts", u"Bass", u"Bari", u"Lead", u"Tenor"});
+	bool isAudio() const;
 
 
 	QString name;
@@ -66,7 +68,7 @@ public:
 	bool bookmarked = false;
 	QDateTime visited;
 
-	QMap<QString, Media> media;
+	std::map<QString, Media> media;
 
 	Q_INVOKABLE void setBookmarked(bool b);
 	void setVisited();
