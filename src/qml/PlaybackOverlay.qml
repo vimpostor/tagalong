@@ -7,6 +7,7 @@ import Quartz
 import Backend
 
 Item {
+	Material.theme: Material.Light
 	ColumnLayout {
 		anchors.fill: parent
 		Item {
