@@ -18,12 +18,12 @@ Item {
 				centreY: height
 				color: Material.color(Material.Blue, Material.Shade100)
 				ListView {
-					anchors.fill: parent
 					id: listview
+					anchors.fill: parent
 					anchors.bottom: parent.bottom
 					model: PlaybackModel
 					delegate: IconButton {
-						width: parent.width
+						width: listview.width
 						text: modelData
 						flat: true
 						ico.name: "audio_file"

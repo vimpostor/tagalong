@@ -22,12 +22,10 @@ void PlaybackModel::reset() {
 	Backend::get()->setAudioSource({});
 	beginResetModel();
 	audio.clear();
-	tag = nullptr;
 	endResetModel();
 }
 
 void PlaybackModel::setTag(const Tag &tag) {
-	this->tag = &tag;
 	beginResetModel();
 	for (auto &[_, m] : tag.media) {
 		if (m.isAudio()) {

@@ -22,6 +22,5 @@ public:
 signals:
 	void playRequested(const Media *media);
 private:
-	const Tag *tag = nullptr;
 	std::vector<const Media *> audio;
 };

@@ -56,7 +56,7 @@ void Api::downloadMedia(const Media &media, Tag &tag) {
 		return;
 	}
 	auto reply = manager.get(QNetworkRequest(media.url));
-	connect(reply, &QNetworkReply::finished, this, std::bind(&Api::handleMediaDownload, this, reply, media, tag));
+	connect(reply, &QNetworkReply::finished, this, std::bind(&Api::handleMediaDownload, this, reply, media, std::ref(tag)));
 	m_downloadActive = true;
 	emit downloadActiveChanged();
 }
