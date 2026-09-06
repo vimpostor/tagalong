@@ -19,6 +19,7 @@ Item {
 				color: Material.color(Material.Blue, Material.Shade100)
 				ListView {
 					id: listview
+					property string currentName
 					anchors.fill: parent
 					anchors.bottom: parent.bottom
 					model: PlaybackModel
@@ -28,6 +29,7 @@ Item {
 						flat: true
 						ico.name: "audio_file"
 						onClicked: {
+							listview.currentName = modelData
 							button.click();
 							PlaybackModel.play(index);
 						}
@@ -43,7 +45,7 @@ Item {
 				anchors { left: parent.left; right: controls.left; }
 				visible: (listview.count && Backend.overlayVisible) || loader.active
 				flat: true
-				text: listview.count + " learning tracks"
+				text: loader.active ? listview.currentName : listview.count + " learning tracks"
 				ico.name: "audiotrack"
 				onClicked: {
 					Backend.audioSource = "";
