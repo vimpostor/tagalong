@@ -1,6 +1,10 @@
 #include "tagcompletionsmodel.hpp"
 
+#include <QClipboard>
+#include <QGuiApplication>
 #include <ranges>
+
+#include "backend.hpp"
 
 int TagCompletionsModel::rowCount(const QModelIndex &) const {
 	return tags.size();
@@ -50,6 +54,19 @@ void TagCompletionsModel::setSorting(QString s) {
 void TagCompletionsModel::setDescending(bool s) {
 	descending = s;
 	complete(query);
+}
+
+void TagCompletionsModel::copyLink(int i) {
+	auto &t = tags[i];
+	if (t.media.empty()) {
+		t.fetchMedia();
+	}
+	if (!t.media.contains("SheetMusicAlt")) {
+		Backend::get()->notifySnackbar("No link available");
+		return;
+	}
+	const auto url = t.media["SheetMusicAlt"].url;
+	QGuiApplication::clipboard()->setText(url.toString());
 }
 
 void TagCompletionsModel::filter(std::vector<Tag> &candidates) {

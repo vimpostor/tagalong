@@ -141,8 +141,21 @@ Item {
 					Component.onCompleted: checked = modelData.bookmarked
 				}
 				TapHandler {
-					onSingleTapped: {
-						Api.requestTag(modelData.id);
+					acceptedButtons: Qt.LeftButton | Qt.RightButton
+					onSingleTapped: (_, b) => {
+						if (b == Qt.RightButton) {
+							menu.open();
+						} else {
+							Api.requestTag(modelData.id);
+						}
+					}
+					onLongPressed: menu.open();
+				}
+				Menu {
+					id: menu
+					MenuItem {
+						text: "Copy link"
+						onTriggered: TagCompletionsModel.copyLink(index);
 					}
 				}
 			}

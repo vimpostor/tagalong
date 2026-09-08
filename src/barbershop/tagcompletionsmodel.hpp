@@ -21,6 +21,8 @@ public:
 	Q_INVOKABLE void setBookmarked(bool b);
 	Q_INVOKABLE void setSorting(QString s);
 	Q_INVOKABLE void setDescending(bool s);
+
+	Q_INVOKABLE void copyLink(int i);
 private:
 	std::vector<Tag> tags;
 	QString query;
