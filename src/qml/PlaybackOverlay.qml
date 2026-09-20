@@ -41,31 +41,13 @@ Item {
 		Item {
 			height: button.height
 			Layout.fillWidth: true
-			IconButton {
-				id: button
-				anchors { left: parent.left; right: controls.left; }
-				visible: (listview.count && Backend.overlayVisible) || loader.active
-				flat: true
-				text: loader.active ? listview.currentName : listview.count + " learning tracks"
-				ico.name: "audiotrack"
-				onClicked: {
-					Backend.audioSource = "";
-					wave.size = !wave.size;
-				}
-			}
 			RowLayout {
 				id: controls
 				visible: loader.active
 				width: parent.width / 3 * 2 * visible
-				anchors.right: parent.right
+				anchors.left: parent.left
 				Behavior on width {
 					NumberAnimation { duration: 300; easing.type: Easing.OutCirc; }
-				}
-				Slider {
-					Layout.fillWidth: true
-					value: loader.active ? loader.item.position : 0
-					to: loader.active ? loader.item.duration : 0
-					onMoved: loader.item.position = position * to;
 				}
 				IconButton {
 					ico.name: "play_pause"
@@ -76,6 +58,24 @@ Item {
 							loader.item.play();
 						}
 					}
+				}
+				Slider {
+					Layout.fillWidth: true
+					value: loader.active ? loader.item.position : 0
+					to: loader.active ? loader.item.duration : 0
+					onMoved: loader.item.position = position * to;
+				}
+			}
+			IconButton {
+				id: button
+				anchors { left: controls.right; right: parent.right; }
+				visible: (listview.count && Backend.overlayVisible) || loader.active
+				flat: true
+				text: loader.active ? listview.currentName : listview.count + " learning tracks"
+				ico.name: "audiotrack"
+				onClicked: {
+					Backend.audioSource = "";
+					wave.size = !wave.size;
 				}
 			}
 		}
