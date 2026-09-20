@@ -64,6 +64,9 @@ Item {
 					value: loader.active ? loader.item.position : 0
 					to: loader.active ? loader.item.duration : 0
 					onMoved: loader.item.position = position * to;
+					Behavior on value {
+						NumberAnimation { duration: 100; }
+					}
 				}
 			}
 			IconButton {
