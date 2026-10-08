@@ -12,6 +12,7 @@ class Backend : public QObject {
 	Q_PROPERTY(QUrl audioSource MEMBER audioSource NOTIFY audioSourceChanged)
 	Q_PROPERTY(QString snackbar MEMBER snackbar NOTIFY snackbarChanged)
 	Q_PROPERTY(bool overlayVisible MEMBER overlayVisible NOTIFY overlayVisibleChanged)
+	Q_PROPERTY(QString extraInfo MEMBER extraInfo NOTIFY extraInfoChanged)
 public:
 	QML_CPP_SINGLETON(Backend)
 
@@ -19,16 +20,19 @@ public:
 	void setDocumentType(QString type);
 	void setAudioSource(QUrl src);
 	void notifySnackbar(QString s);
+	void setExtraInfo(QString i);
 signals:
 	void documentSourceChanged();
 	void documentTypeChanged();
 	void audioSourceChanged();
 	void snackbarChanged();
 	void overlayVisibleChanged();
+	void extraInfoChanged();
 private:
 	QUrl documentSource;
 	QString documentType;
 	QUrl audioSource;
 	QString snackbar;
 	bool overlayVisible = false;
+	QString extraInfo;
 };

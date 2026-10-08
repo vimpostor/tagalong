@@ -328,6 +328,7 @@ void Api::initDb() {
 }
 
 void Api::downloadAndView(const Media &media) {
+	Backend::get()->setExtraInfo(QString::number(currenttag.id));
 	if (media.cache.isEmpty()) {
 		downloadMedia(media, currenttag);
 	} else {

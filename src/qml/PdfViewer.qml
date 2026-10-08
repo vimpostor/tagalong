@@ -55,6 +55,21 @@ Rectangle {
 			onWheel: e => pinch.persistentScale *= 1.2 ** (e.angleDelta.y / 120)
 		}
 	}
+	Icon {
+		id: numberIcon
+		anchors.left: parent.left
+		anchors.top: parent.top
+		anchors.margins: 16
+		visible: Backend.overlayVisible && Backend.extraInfo.length
+		name: "numbers"
+		color: Material.primary
+	}
+	Label {
+		anchors { left: numberIcon.right; verticalCenter: numberIcon.verticalCenter }
+		visible: numberIcon.visible
+		text: Backend.extraInfo
+		color: Material.primary
+	}
 	IconButton {
 		id: ic
 		anchors.right: parent.right

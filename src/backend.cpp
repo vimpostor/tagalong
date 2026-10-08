@@ -21,3 +21,8 @@ void Backend::notifySnackbar(QString s) {
 	snackbar = s;
 	emit snackbarChanged();
 }
+
+void Backend::setExtraInfo(QString i) {
+	extraInfo = i;
+	emit extraInfoChanged();
+}
