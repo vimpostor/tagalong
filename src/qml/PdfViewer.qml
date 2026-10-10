@@ -69,6 +69,7 @@ Rectangle {
 		visible: numberIcon.visible
 		text: Backend.extraInfo
 		color: Material.primary
+		font.pixelSize: numberIcon.size
 	}
 	IconButton {
 		id: ic
