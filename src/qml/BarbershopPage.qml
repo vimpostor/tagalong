@@ -14,6 +14,7 @@ Item {
 			property bool insearch: false
 			Layout.fillWidth: true
 			placeholderText: "Search Tags"
+			live: false
 			Shortcut {
 				sequences: ["Ctrl+K"]
 				onActivated: search.forceActiveFocus();
@@ -26,7 +27,7 @@ Item {
 					TagCompletionsModel.reset();
 				}
 			}
-			onTextChanged: {
+			onTextEdited: {
 				search.insearch = true;
 				TagCompletionsModel.complete(text);
 			}

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 4.0)
+cmake_minimum_required(VERSION 4.1)
 project(tagalong VERSION 1.0 DESCRIPTION "A sheet music viewer with special integration for Barbershop tags")
 
 set(CMAKE_CXX_STANDARD 26)
@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 list(APPEND QT_MODULES Core Qml Quick QuickControls2 Svg Pdf Multimedia Network Sql)
-find_package(Qt6 6.11 COMPONENTS ${QT_MODULES} REQUIRED)
+find_package(Qt6 6.12 COMPONENTS ${QT_MODULES} REQUIRED)
 qt_standard_project_setup(REQUIRES ${Qt6_VERSION})
 list(TRANSFORM QT_MODULES PREPEND "Qt6::")
 
@@ -14,7 +14,7 @@ list(APPEND LINK_LIBS ${QT_MODULES})
 
 include(FetchContent)
 
-FetchContent_Declare(quartz GIT_REPOSITORY https://github.com/vimpostor/quartz.git GIT_TAG f57b0566c59474e99b1d847b2a4b5cdf453b3001)
+FetchContent_Declare(quartz GIT_REPOSITORY https://github.com/vimpostor/quartz.git GIT_TAG b07291d12e136c91894589bba6a8c6ccc5c0ab76)
 FetchContent_MakeAvailable(quartz)
 
 if(ANDROID)
