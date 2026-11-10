@@ -1,5 +1,7 @@
 # Tag along
 
+[![Continuous Integration](https://github.com/vimpostor/tagalong/actions/workflows/ci.yml/badge.svg)](https://github.com/vimpostor/tagalong/actions/workflows/ci.yml)
+
 A sheet music viewer with special integration for [Barbershop tags](https://www.barbershoptags.com/).
 
 # Installation

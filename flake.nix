@@ -42,13 +42,13 @@
 				cmakeFlags = quartz.lib.cmakeWrapper { inherit pkgs; cmakeFile = ./CMakeLists.txt; } ++ [("-DFETCHCONTENT_SOURCE_DIR_FFTUNE=" + fftune)];
 				buildFlags = "icon-integration all";
 			};
-		in {
+		in rec {
 			packages = {
 				default = self.outputs.packages.${system}.${defaultStdenv};
 			} // builtins.listToAttrs (map (x: { name = x.name; value = makeStdenvPkg x.pkg; }) stdenvs);
 			checks = {
 				format = pkgs.runCommand "format" { src = ./.; nativeBuildInputs = [ pkgs.clang-tools pkgs.git ]; } "mkdir $out && cd $src && find . -type f -path './*\\.[hc]pp' -exec clang-format -style=file --dry-run --Werror {} \\;";
-			};
+			} // packages;
 		}
 	);
 }
